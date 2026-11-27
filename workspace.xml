@@ -5,7 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="55f5e643-814c-4126-9c71-71dc5d111214" name="Changes" comment="tiki">
-      <change beforePath="$PROJECT_DIR$/.idea/.idea/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -52,6 +51,7 @@
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "disable.download.node.interpreter.editor.notification": "true",
     "git-widget-placeholder": "main",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
@@ -89,7 +89,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1795766331352</updated>
-      <workItem from="1795766332625" duration="656000" />
+      <workItem from="1795766332625" duration="804000" />
     </task>
     <task id="LOCAL-00001" summary="tiki">
       <option name="closed" value="true" />
@@ -99,7 +99,23 @@
       <option name="project" value="LOCAL" />
       <updated>1795766659462</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="tiki">
+      <option name="closed" value="true" />
+      <created>1795767165986</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1795767165986</updated>
+    </task>
+    <task id="LOCAL-00003" summary="tiki">
+      <option name="closed" value="true" />
+      <created>1795767295447</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1795767295447</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
