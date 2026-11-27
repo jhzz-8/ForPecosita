@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
   <component name="ChangeListManager">
-    <list default="true" id="55f5e643-814c-4126-9c71-71dc5d111214" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Pecosita.zip" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+    <list default="true" id="55f5e643-814c-4126-9c71-71dc5d111214" name="Changes" comment="tiki">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +66,14 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\asus\OneDrive\Desktop\ForPecosita\.idea" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\asus\OneDrive\Desktop\ForPecosita" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -78,11 +89,24 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1795766331352</updated>
-      <workItem from="1795766332625" duration="147000" />
+      <workItem from="1795766332625" duration="656000" />
     </task>
+    <task id="LOCAL-00001" summary="tiki">
+      <option name="closed" value="true" />
+      <created>1795766659462</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1795766659462</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="tiki" />
+    <option name="LAST_COMMIT_MESSAGE" value="tiki" />
   </component>
 </project>
