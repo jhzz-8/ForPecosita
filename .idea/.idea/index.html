@@ -1,0 +1,2799 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>¡Remate de Punta! - Voley Pro</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: deportivas para el juego + cómic, manuscrito y máquina de escribir para la recompensa -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@600;700&family=Inter:wght@400;600;700;800&family=Patrick+Hand&family=Russo+One&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =========================================================================
+       VARIABLES Y ESTILOS BASE
+       ========================================================================= */
+    :root {
+      --font-display: 'Russo One', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --ink: #222222;
+      --snoopy-red: #e63946;
+      --charlie-yellow: #ffd166;
+      --paper-cream: #fdf6e3;
+      --envelope-pink: #f9c2d1;
+      --envelope-pink-flap: #f4a4ba;
+      --sky-top: #d8f0ff;
+      --sky-mid: #eef8ff;
+      --sky-bottom: #fff9ec;
+      --grass-green: #7bc96f;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* =========================================================================
+       VISTA 1: JUEGO DE VOLEIBOL CON SNOOPY
+       ========================================================================= */
+    #game-view {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      font-family: var(--font-body);
+      background: radial-gradient(circle at top, #1e293b 0%, #0f172a 65%, #020617 100%);
+      color: #f8fafc;
+      z-index: 60;
+      transition: opacity 0.6s ease;
+    }
+
+    .font-sport {
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
+    }
+
+    .btn-game {
+      position: relative;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, filter 0.12s ease;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.35), 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-game:hover {
+      filter: brightness(1.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-game:active {
+      transform: translateY(3px);
+      box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.25);
+    }
+
+    .btn-claim {
+      background: linear-gradient(135deg, #facc15 0%, #f59e0b 55%, #ea580c 100%);
+      box-shadow: 0 6px 0 #9a3412, 0 0 25px rgba(250, 204, 21, 0.55);
+      animation: pulseGlow 1.6s infinite ease-in-out;
+    }
+
+    .btn-claim:active {
+      transform: translateY(4px);
+      box-shadow: 0 2px 0 #9a3412, 0 0 15px rgba(250, 204, 21, 0.4);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 6px 0 #9a3412, 0 0 20px rgba(250, 204, 21, 0.45); }
+      50% { box-shadow: 0 6px 0 #9a3412, 0 0 36px rgba(250, 204, 21, 0.85); }
+    }
+
+    @keyframes modalPop {
+      0% { transform: scale(0.75) translateY(20px); opacity: 0; }
+      70% { transform: scale(1.04) translateY(-3px); opacity: 1; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    .animate-modal-pop {
+      animation: modalPop 0.38s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes gameFloatSlow {
+      0%, 100% { transform: translateY(0px) rotate(-2deg); }
+      50% { transform: translateY(-7px) rotate(2deg); }
+    }
+
+    .animate-float {
+      animation: gameFloatSlow 2.4s ease-in-out infinite;
+    }
+
+    #canvas-wrapper {
+      position: relative;
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+    }
+
+    #gameCanvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      max-width: 1280px;
+      border-radius: 18px;
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.55), 0 0 0 2px rgba(255, 255, 255, 0.12);
+      cursor: crosshair;
+      touch-action: none;
+    }
+
+    /* =========================================================================
+       VISTA 2: PÁGINA RECOMPENSA "8 RAZONES PARA AMARTE Y QUEDARME CONTIGO"
+       ========================================================================= */
+    #reward-view {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Patrick Hand', cursive, sans-serif;
+      color: var(--ink);
+      background: linear-gradient(180deg, var(--sky-top) 0%, var(--sky-mid) 58%, var(--sky-bottom) 100%);
+      touch-action: none;
+      z-index: 40;
+      opacity: 0;
+      display: none;
+      transition: opacity 0.65s ease;
+    }
+
+    #reward-view.active {
+      display: block;
+    }
+
+    #reward-view.visible {
+      opacity: 1;
+    }
+
+    .font-hand { font-family: 'Patrick Hand', cursive; }
+    .font-script { font-family: 'Dancing Script', cursive; }
+    .font-type { font-family: 'Courier Prime', monospace; }
+
+    /* Bordes y sombras estilo viñeta de cómic */
+    .comic-border {
+      border: 3px solid var(--ink);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .comic-border-sm {
+      border: 2.5px solid var(--ink);
+      box-shadow: 3.5px 3.5px 0 var(--ink);
+    }
+    .comic-btn {
+      border: 2.5px solid var(--ink);
+      box-shadow: 3px 3px 0 var(--ink);
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+    .comic-btn:hover {
+      transform: translate(-1px, -1px);
+      box-shadow: 4px 4px 0 var(--ink);
+    }
+    .comic-btn:active {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+    }
+
+    /* Franja clásica en zig-zag estilo camiseta de Charlie Brown */
+    .charlie-zigzag {
+      height: 18px;
+      width: 100%;
+      background-color: var(--charlie-yellow);
+      background-image:
+        linear-gradient(135deg, var(--ink) 25%, transparent 25%),
+        linear-gradient(225deg, var(--ink) 25%, transparent 25%),
+        linear-gradient(45deg, var(--ink) 25%, transparent 25%),
+        linear-gradient(315deg, var(--ink) 25%, transparent 25%);
+      background-position: 10px 0, 10px 0, 0 0, 0 0;
+      background-size: 20px 18px;
+      background-repeat: repeat-x;
+      border-bottom: 2.5px solid var(--ink);
+    }
+
+    /* Animaciones temáticas Snoopy */
+    @keyframes floatHeart {
+      0% { transform: translateY(0) scale(0.9) rotate(-6deg); opacity: 0.75; }
+      50% { transform: translateY(-14px) scale(1.05) rotate(6deg); opacity: 1; }
+      100% { transform: translateY(0) scale(0.9) rotate(-6deg); opacity: 0.75; }
+    }
+    @keyframes driftCloud {
+      0% { transform: translateX(-10px); }
+      50% { transform: translateX(18px); }
+      100% { transform: translateX(-10px); }
+    }
+    @keyframes flutter {
+      0%, 100% { transform: translateY(0) rotate(-4deg); }
+      50% { transform: translateY(-8px) rotate(5deg); }
+    }
+    @keyframes shakeError {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-7px); }
+      40% { transform: translateX(7px); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(5px); }
+    }
+    @keyframes floatCard {
+      0% { transform: translateY(0px) rotate(-2.5deg); }
+      100% { transform: translateY(-14px) rotate(2.5deg); }
+    }
+
+    .anim-cloud { animation: driftCloud 14s ease-in-out infinite; }
+    .anim-cloud-slow { animation: driftCloud 20s ease-in-out infinite reverse; }
+    .anim-heart { animation: floatHeart 4.5s ease-in-out infinite; }
+    .anim-woodstock { animation: flutter 3.2s ease-in-out infinite; }
+    .anim-shake { animation: shakeError 0.38s ease-in-out; }
+
+    /* Collage interactivo en pantalla de inicio (sin recortes) */
+    .collage-photo {
+      position: absolute;
+      width: auto;
+      max-width: 175px;
+      cursor: grab;
+      z-index: 15;
+      touch-action: none;
+    }
+    .collage-photo:active,
+    .collage-photo.dragging {
+      cursor: grabbing;
+    }
+    .collage-inner {
+      background: #ffffff;
+      padding: 7px 7px 10px 7px;
+      border: 2.5px solid var(--ink);
+      box-shadow: 4px 4px 0 var(--ink);
+      border-radius: 8px;
+      animation: floatCard 5.5s ease-in-out infinite alternate;
+      transition: box-shadow 0.2s ease;
+    }
+    .collage-photo.dragging .collage-inner {
+      animation-play-state: paused;
+      box-shadow: 7px 7px 0 var(--ink);
+    }
+    .collage-photo .photo-frame {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid var(--ink);
+      border-radius: 4px;
+      overflow: hidden;
+      background: #fff9fa;
+      min-width: 96px;
+      min-height: 82px;
+      position: relative;
+    }
+    .collage-photo img {
+      width: auto;
+      height: auto;
+      max-width: 155px;
+      max-height: 155px;
+      object-fit: contain;
+      pointer-events: none;
+      display: block;
+    }
+    @media (max-width: 640px) {
+      .collage-photo { max-width: 122px; }
+      .collage-inner { padding: 5px 5px 8px 5px; }
+      .collage-photo .photo-frame { min-width: 78px; min-height: 68px; }
+      .collage-photo img { max-width: 108px; max-height: 108px; }
+    }
+
+    /* Sobres interactivos temática Snoopy (8 cartas rosadas) */
+    .envelope-wrapper {
+      position: absolute;
+      width: 315px;
+      height: 218px;
+      cursor: grab;
+      touch-action: none;
+      transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+    }
+    .envelope-wrapper.dragging {
+      cursor: grabbing;
+      transition: none !important;
+    }
+    @media (max-width: 480px) {
+      .envelope-wrapper { width: 282px; height: 198px; }
+    }
+
+    .envelope-body {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: var(--envelope-pink);
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: 5px 5px 0 var(--ink);
+      overflow: visible;
+    }
+
+    .letter-card {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 12px;
+      min-height: 265px;
+      background: var(--paper-cream);
+      border: 2.5px solid var(--ink);
+      border-radius: 10px;
+      padding: 10px 12px 12px 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+      transform: translateY(0) scale(0.92);
+      opacity: 0;
+      pointer-events: none;
+      z-index: 2;
+      transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.35s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .envelope-wrapper.open .letter-card {
+      transform: translateY(-150px) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+      z-index: 25;
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .letter-photo-frame {
+      width: 100%;
+      min-height: 110px;
+      max-height: 185px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      background: #ffffff;
+      border: 2px solid var(--ink);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: zoom-in;
+      position: relative;
+    }
+    .letter-photo-frame img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 175px;
+      object-fit: contain;
+      display: block;
+      border-radius: 3px;
+    }
+    @media (max-width: 480px) {
+      .letter-card { min-height: 245px; }
+      .envelope-wrapper.open .letter-card { transform: translateY(-135px) scale(1); }
+      .letter-photo-frame { max-height: 160px; }
+      .letter-photo-frame img { max-height: 150px; }
+    }
+
+    .envelope-front {
+      position: absolute;
+      inset: 0;
+      border-radius: 9px;
+      background: var(--envelope-pink);
+      z-index: 10;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .envelope-front::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(to top right, transparent 49.2%, var(--ink) 49.5%, var(--ink) 50.5%, transparent 50.8%),
+        linear-gradient(to top left, transparent 49.2%, var(--ink) 49.5%, var(--ink) 50.5%, transparent 50.8%);
+      opacity: 0.14;
+    }
+
+    .envelope-flap {
+      position: absolute;
+      top: -1px;
+      left: -1px;
+      right: -1px;
+      height: 114px;
+      z-index: 15;
+      transform-origin: top center;
+      transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease, z-index 0.2s;
+      pointer-events: none;
+    }
+    .envelope-wrapper.open .envelope-flap {
+      transform: rotateX(175deg);
+      opacity: 0;
+      z-index: 1;
+    }
+
+    .heart-seal {
+      position: absolute;
+      left: 50%;
+      top: 78px;
+      transform: translate(-50%, -50%);
+      width: 46px;
+      height: 46px;
+      z-index: 18;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.35s ease, opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .envelope-wrapper.open .heart-seal {
+      opacity: 0;
+      transform: translate(-50%, -60%) scale(0.5);
+    }
+
+    /* Polaroid final sorpresa */
+    #final-polaroid {
+      position: absolute;
+      width: 260px;
+      background: #ffffff;
+      padding: 12px 12px 16px 12px;
+      border: 3px solid var(--ink);
+      border-radius: 12px;
+      box-shadow: 6px 6px 0 var(--ink);
+      z-index: 5;
+      opacity: 0;
+      transform: scale(0.84) rotate(-3deg);
+      pointer-events: none;
+      cursor: grab;
+      transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    #final-polaroid.revealed {
+      opacity: 1;
+      transform: scale(1) rotate(-2deg);
+      pointer-events: auto;
+    }
+    #final-polaroid.dragging {
+      cursor: grabbing;
+      transition: none !important;
+    }
+    .polaroid-photo-frame {
+      width: 100%;
+      min-height: 155px;
+      max-height: 220px;
+      border: 2.5px solid var(--ink);
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fffdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      position: relative;
+    }
+    .polaroid-photo-frame img {
+      width: auto;
+      height: auto;
+      max-width: 100%;
+      max-height: 210px;
+      object-fit: contain;
+      display: block;
+      pointer-events: none;
+    }
+    @media (max-width: 480px) {
+      #final-polaroid { width: 235px; padding: 10px 10px 14px 10px; }
+      .polaroid-photo-frame { max-height: 190px; }
+      .polaroid-photo-frame img { max-height: 180px; }
+    }
+
+    #zoom-img {
+      width: auto;
+      height: auto;
+      max-width: 88vw;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+      transform: none;
+    }
+
+    .fallback-box {
+      display: none;
+      width: 100%;
+      min-height: 95px;
+      background: linear-gradient(135deg, #fff5f5 0%, #fffbeb 100%);
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      padding: 8px;
+      text-align: center;
+    }
+    .fallback-box.active {
+      display: flex;
+    }
+  </style>
+</head>
+<body>
+
+<!-- =========================================================================
+     VISTA 1: JUEGO DE VOLEIBOL CON SNOOPY
+     ========================================================================= -->
+<div id="game-view">
+  <!-- Barra superior -->
+  <header class="w-full max-w-[1300px] mx-auto px-3 pt-2.5 pb-1.5 flex items-center justify-center shrink-0">
+    <div class="bg-slate-900/90 border border-amber-400/50 px-5 py-2 rounded-2xl shadow-lg text-center">
+      <p id="game-top-msg" class="font-sport text-sm sm:text-base md:text-lg text-amber-300 tracking-wide">
+        Necesitas un punto para reclamar la recompensa
+      </p>
+    </div>
+  </header>
+
+  <!-- Área del Canvas -->
+  <main id="canvas-wrapper">
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Pantalla de Inicio del Juego -->
+    <div id="start-overlay" class="absolute inset-0 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm z-20">
+      <div class="animate-modal-pop max-w-md w-full bg-gradient-to-b from-slate-800 to-slate-900 border-2 border-sky-400/40 rounded-3xl p-6 text-center shadow-2xl">
+        <div id="start-icon" class="text-5xl mb-2 animate-float">🐾🏐</div>
+        <h2 id="start-title" class="font-sport text-2xl sm:text-3xl text-amber-400 drop-shadow mb-1">¡REMATE CON SNOOPY!</h2>
+        <p id="start-subtitle" class="text-xs uppercase tracking-widest text-sky-300 font-bold mb-4">¡Logra 1 punto para reclamar tu premio!</p>
+
+        <div class="bg-slate-950/60 rounded-2xl p-3.5 text-left text-xs sm:text-sm text-slate-200 space-y-2 mb-5 border border-slate-700/80">
+          <div class="flex items-start gap-2.5">
+            <span class="bg-sky-500/20 text-sky-300 font-bold px-2 py-0.5 rounded-lg">1</span>
+            <p id="start-step-1">Tu <strong>Armador</strong> levanta el balón. Pulsa <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-amber-300 font-bold">ESPACIO</kbd> o <strong>Toca/Clic</strong> para que <strong>Snoopy salte</strong>.</p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="bg-amber-500/20 text-amber-300 font-bold px-2 py-0.5 rounded-lg">2</span>
+            <p id="start-step-2">En el aire, cuando el anillo brille en <strong>"¡REMATA AHORA!"</strong>, pulsa de nuevo para hacer el <strong>remate de punta</strong> hacia el espacio marcado.</p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-lg">3</span>
+            <p id="start-step-3">Mueve el espacio donde caerá el balón tocando la cancha rival o usando <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-amber-300 font-bold">◀ ▶</kbd>.</p>
+          </div>
+        </div>
+
+        <button id="btn-start" class="btn-game w-full py-3.5 rounded-2xl font-sport text-lg text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-400 border-2 border-yellow-200">
+          ¡JUGAR!
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal de Recompensa al Anotar Punto -->
+    <div id="reward-modal" class="hidden absolute inset-0 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm z-30">
+      <div id="reward-card" class="animate-modal-pop max-w-sm w-full bg-gradient-to-b from-indigo-950 via-slate-900 to-slate-950 border-2 border-amber-400 rounded-3xl p-6 text-center shadow-[0_0_50px_rgba(250,204,21,0.35)] relative overflow-hidden">
+        <div class="absolute -top-16 left-1/2 -translate-x-1/2 w-56 h-32 bg-amber-400/25 blur-2xl rounded-full pointer-events-none"></div>
+
+        <div id="reward-badge" class="inline-block bg-emerald-500/20 border border-emerald-400/50 text-emerald-300 text-xs font-extrabold uppercase tracking-widest px-3 py-1 rounded-full mb-3">
+          ¡PUNTO ANOTADO!
+        </div>
+
+        <div id="reward-icon" class="text-6xl mb-2 animate-float drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]">🏆💖</div>
+
+        <h2 id="reward-title" class="font-sport text-3xl sm:text-4xl text-amber-300 leading-tight mb-2 drop-shadow">
+          Esoo mi niña
+        </h2>
+
+        <p id="reward-reason" class="text-xs sm:text-sm text-sky-200 font-semibold mb-5">
+          Has recibido una recompensa
+        </p>
+
+        <button id="btn-claim" class="btn-game btn-claim w-full py-3.5 rounded-2xl font-sport text-lg sm:text-xl text-slate-950 tracking-wider border-2 border-yellow-200">
+          Reclamar recompensa
+        </button>
+      </div>
+    </div>
+
+    <!-- Toast de transición -->
+    <div id="claimed-toast" class="hidden absolute top-5 left-1/2 -translate-x-1/2 bg-emerald-500 text-slate-950 font-sport text-sm sm:text-base px-5 py-2.5 rounded-2xl shadow-xl border-2 border-emerald-200 z-40">
+      ¡Abriendo tu recompensa...!
+    </div>
+  </main>
+
+  <!-- Controles inferiores del juego -->
+  <footer class="w-full max-w-[1300px] mx-auto px-3 pb-2.5 pt-1 flex flex-wrap items-center justify-center gap-2.5 shrink-0">
+    <button id="btn-action" class="btn-game flex-1 sm:flex-none sm:min-w-[250px] py-2.5 px-6 rounded-2xl font-sport text-base sm:text-lg text-slate-950 bg-gradient-to-r from-sky-400 to-cyan-300 border-2 border-sky-200 tracking-wide">
+      🏐 SALTAR / REMATAR (ESPACIO)
+    </button>
+
+    <!-- Número del intento actual -->
+    <div id="status-pill" class="flex items-center justify-center bg-slate-900/90 border border-amber-400/50 px-4 py-2 rounded-2xl font-sport text-base sm:text-lg text-amber-300 min-w-[48px]">
+      <span id="status-text">1</span>
+    </div>
+  </footer>
+</div>
+
+<!-- =========================================================================
+     VISTA 2: PÁGINA RECOMPENSA "8 RAZONES PARA AMARTE Y QUEDARME CONTIGO"
+     ========================================================================= -->
+<div id="reward-view">
+  <!-- FONDO TEMÁTICO SNOOPY / PEANUTS (Cielo, Nubes, Woodstock, Casita) -->
+  <div id="snoopy-background" class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+    <!-- Nubes estilo cómic -->
+    <svg class="anim-cloud absolute top-6 left-[6%] w-28 sm:w-36 opacity-90" viewBox="0 0 140 70" fill="none">
+      <path d="M30 58 H112 C125 58 132 48 130 37 C128 27 118 22 108 24 C104 11 90 5 76 9 C66 12 60 19 57 25 C46 21 33 27 30 38 C20 39 14 48 18 55 C20 57 24 58 30 58 Z" fill="#FFFFFF" stroke="#222222" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+    <svg class="anim-cloud-slow absolute top-14 right-[8%] w-32 sm:w-44 opacity-90" viewBox="0 0 140 70" fill="none">
+      <path d="M26 56 H110 C123 56 130 46 128 35 C126 26 116 21 106 23 C101 11 86 6 73 11 C64 14 59 20 56 26 C45 22 33 28 30 38 C20 39 15 47 18 53 C20 55 23 56 26 56 Z" fill="#FFFFFF" stroke="#222222" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+
+    <svg class="anim-cloud absolute top-[34%] left-[2%] w-20 sm:w-28 opacity-75" viewBox="0 0 140 70" fill="none">
+      <path d="M30 58 H112 C125 58 132 48 130 37 C128 27 118 22 108 24 C104 11 90 5 76 9 C66 12 60 19 57 25 C46 21 33 27 30 38 C20 39 14 48 18 55 Z" fill="#FFFFFF" stroke="#222222" stroke-width="3"/>
+    </svg>
+
+    <!-- Huellitas de perrito sutiles en el cielo -->
+    <svg class="absolute top-[22%] left-[18%] w-7 opacity-25 -rotate-12" viewBox="0 0 40 40" fill="#222222">
+      <ellipse cx="20" cy="26" rx="9" ry="7"/>
+      <circle cx="10" cy="16" r="3.5"/><circle cx="17" cy="11" r="3.5"/><circle cx="25" cy="11" r="3.5"/><circle cx="31" cy="16" r="3.5"/>
+    </svg>
+    <svg class="absolute top-[52%] right-[16%] w-8 opacity-20 rotate-12" viewBox="0 0 40 40" fill="#222222">
+      <ellipse cx="20" cy="26" rx="9" ry="7"/>
+      <circle cx="10" cy="16" r="3.5"/><circle cx="17" cy="11" r="3.5"/><circle cx="25" cy="11" r="3.5"/><circle cx="31" cy="16" r="3.5"/>
+    </svg>
+    <svg class="absolute top-[66%] left-[12%] w-7 opacity-20 -rotate-6" viewBox="0 0 40 40" fill="#222222">
+      <ellipse cx="20" cy="26" rx="9" ry="7"/>
+      <circle cx="10" cy="16" r="3.5"/><circle cx="17" cy="11" r="3.5"/><circle cx="25" cy="11" r="3.5"/><circle cx="31" cy="16" r="3.5"/>
+    </svg>
+
+    <!-- Corazoncitos rojos flotantes -->
+    <svg class="anim-heart absolute top-[18%] right-[22%] w-7" viewBox="0 0 32 32">
+      <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+    </svg>
+    <svg class="anim-heart absolute top-[45%] left-[8%] w-6" style="animation-delay: 1.2s;" viewBox="0 0 32 32">
+      <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+    </svg>
+    <svg class="anim-heart absolute top-[30%] right-[7%] w-5" style="animation-delay: 2.1s;" viewBox="0 0 32 32">
+      <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+    </svg>
+
+    <!-- Pajaritos amarillos estilo Woodstock -->
+    <svg class="anim-woodstock absolute top-[26%] left-[26%] w-10 hidden sm:block" viewBox="0 0 60 50" fill="none">
+      <path d="M22 25 C22 15 32 13 36 18 L44 17 L37 22 C38 28 33 34 26 34 C20 34 16 30 16 26 L10 23 L17 22 Z" fill="#ffd166" stroke="#222222" stroke-width="2.3" stroke-linejoin="round"/>
+      <path d="M26 15 L23 9 M29 14 L29 8 M32 15 L35 10" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="33" cy="20" r="1.4" fill="#222222"/>
+      <path d="M25 34 L24 40 M29 34 L30 40" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+
+    <svg class="anim-woodstock absolute bottom-[125px] right-[12%] w-11" style="animation-delay: 0.9s;" viewBox="0 0 60 50" fill="none">
+      <g transform="scale(-1,1) translate(-60,0)">
+        <path d="M22 25 C22 15 32 13 36 18 L44 17 L37 22 C38 28 33 34 26 34 C20 34 16 30 16 26 L10 23 L17 22 Z" fill="#ffd166" stroke="#222222" stroke-width="2.3" stroke-linejoin="round"/>
+        <path d="M26 15 L23 9 M29 14 L29 8 M32 15 L35 10" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="33" cy="20" r="1.4" fill="#222222"/>
+        <path d="M25 34 L24 40 M29 34 L30 40" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+      </g>
+    </svg>
+
+    <!-- Escena inferior: Pasto verde y casita roja de Snoopy -->
+    <div class="absolute bottom-0 left-0 right-0 h-28 sm:h-32">
+      <svg class="absolute bottom-7 left-4 sm:left-12 w-32 sm:w-40 z-10" viewBox="0 0 180 150" fill="none">
+        <g transform="translate(36, 12)">
+          <path d="M20 34 C30 22 60 22 72 32 C78 36 86 35 90 30 C95 24 102 27 100 35 C97 41 84 42 74 42 H22 C14 42 12 36 20 34 Z" fill="#FFFFFF" stroke="#222222" stroke-width="2.6"/>
+          <ellipse cx="26" cy="28" rx="14" ry="11" fill="#FFFFFF" stroke="#222222" stroke-width="2.6"/>
+          <circle cx="13" cy="24" r="3.2" fill="#222222"/>
+          <ellipse cx="33" cy="32" rx="6" ry="9" fill="#222222" transform="rotate(-18 33 32)"/>
+          <path d="M21 26 Q24 23 27 26" stroke="#222222" stroke-width="2" stroke-linecap="round"/>
+          <path d="M36 33 L42 40" stroke="#e63946" stroke-width="3.5" stroke-linecap="round"/>
+        </g>
+        <path d="M20 78 L90 36 L160 78 Z" fill="#e63946" stroke="#222222" stroke-width="3.2" stroke-linejoin="round"/>
+        <rect x="34" y="78" width="112" height="66" fill="#e63946" stroke="#222222" stroke-width="3.2"/>
+        <line x1="34" y1="98" x2="146" y2="98" stroke="#222222" stroke-width="2" opacity="0.45"/>
+        <line x1="34" y1="118" x2="146" y2="118" stroke="#222222" stroke-width="2" opacity="0.45"/>
+        <path d="M72 144 V104 C72 94 108 94 108 104 V144 Z" fill="#222222"/>
+      </svg>
+
+      <svg class="absolute bottom-0 left-0 w-full h-16 sm:h-20" preserveAspectRatio="none" viewBox="0 0 1440 100" fill="none">
+        <path d="M0 32 Q360 0 720 28 T1440 22 L1440 100 L0 100 Z" fill="#7bc96f" stroke="#222222" stroke-width="4"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- PANTALLA 1: LOGIN + COLLAGE INTERACTIVO DE 7 FOTOS -->
+  <section id="login-screen" class="fixed inset-0 z-20 flex items-center justify-center p-4 transition-opacity duration-500">
+    <div id="collage-container" class="fixed inset-0 pointer-events-none z-10"></div>
+
+    <div id="login-card" class="relative z-30 w-full max-w-md bg-[#fffdf7] rounded-2xl comic-border overflow-hidden">
+      <div class="charlie-zigzag"></div>
+
+      <div class="p-6 sm:p-7 text-center">
+        <div class="flex justify-center mb-2">
+          <svg class="w-24 h-24 sm:w-28 sm:h-28 drop-shadow-sm" viewBox="0 0 140 135" fill="none">
+            <path d="M48 92 C44 110 52 122 70 122 C88 122 96 110 92 92 C90 80 82 72 70 72 C58 72 50 80 48 92 Z" fill="#FFFFFF" stroke="#222222" stroke-width="3"/>
+            <ellipse cx="52" cy="118" rx="13" ry="7" fill="#FFFFFF" stroke="#222222" stroke-width="3"/>
+            <ellipse cx="88" cy="118" rx="13" ry="7" fill="#FFFFFF" stroke="#222222" stroke-width="3"/>
+            <path d="M46 46 C46 26 62 16 78 18 C95 20 104 34 98 50 C94 62 82 68 68 68 C52 68 42 62 36 56 C30 50 32 40 42 40 C44 40 46 43 46 46 Z" fill="#FFFFFF" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+            <ellipse cx="36" cy="45" rx="6" ry="4.5" fill="#222222"/>
+            <path d="M84 40 C95 40 104 52 100 66 C97 74 87 74 84 65 C81 56 80 45 84 40 Z" fill="#222222" stroke="#222222" stroke-width="2"/>
+            <path d="M58 38 Q62 33 66 38" stroke="#222222" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M46 57 Q56 63 66 56" stroke="#222222" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M56 70 Q70 76 84 70" stroke="#e63946" stroke-width="5" stroke-linecap="round"/>
+            <path d="M70 112 C70 112 46 97 46 82 C46 74 52 69 59 69 C64 69 68 72 70 76 C72 72 76 69 81 69 C88 69 94 74 94 82 C94 97 70 112 70 112 Z" fill="#e63946" stroke="#222222" stroke-width="2.8"/>
+            <path d="M46 84 C52 84 57 88 57 93 C57 97 51 98 46 95" fill="#FFFFFF" stroke="#222222" stroke-width="2.6" stroke-linecap="round"/>
+            <path d="M94 84 C88 84 83 88 83 93 C83 97 89 98 94 95" fill="#FFFFFF" stroke="#222222" stroke-width="2.6" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <h1 id="login-title" class="font-script text-3xl sm:text-4xl font-bold text-[#222222] leading-tight mb-2">
+          8 razones para amarte y quedarme contigo
+        </h1>
+        <p id="login-subtitle" class="text-base sm:text-lg text-gray-700 mb-4">
+          Ingresa nuestra fecha especial para abrir tus cartas 💌
+        </p>
+
+        <form id="login-form" class="space-y-3" autocomplete="off">
+          <div class="relative">
+            <input
+              id="date-input"
+              type="text"
+              inputmode="numeric"
+              maxlength="10"
+              placeholder="DD/MM/AAAA"
+              class="font-type w-full text-center text-xl tracking-widest py-3 px-4 bg-white rounded-xl border-[2.5px] border-[#222222] text-[#222222] focus:outline-none focus:ring-2 focus:ring-[#e63946]"
+            />
+          </div>
+
+          <p id="error-msg" class="text-sm text-[#e63946] font-bold min-h-[20px] transition-opacity opacity-0">
+            Mmm... esa no es nuestra fecha especial, ¡intenta de nuevo! 🐾
+          </p>
+
+          <button
+            id="login-btn"
+            type="submit"
+            class="comic-btn w-full py-3 px-6 rounded-xl bg-[#e63946] text-white text-xl font-bold tracking-wide hover:bg-[#d62839]"
+          >
+            Abre tus cartas My Life
+          </button>
+        </form>
+
+        <p id="login-tip" class="mt-4 text-xs sm:text-sm text-gray-500">
+          Tip: Puedes arrastrar y hacer clic en las fotitos de alrededor
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- PANTALLA 2: ÁREA DE LAS 8 CARTAS + POLAROID FINAL SORPRESA -->
+  <section id="letters-screen" class="fixed inset-0 z-20 hidden opacity-0 transition-opacity duration-700">
+    <div class="absolute top-3 left-0 right-0 flex items-center justify-between px-4 sm:px-6 z-40 pointer-events-none">
+      <div class="bg-[#fffdf7]/95 px-4 py-1.5 rounded-full comic-border-sm pointer-events-auto">
+        <span id="letters-header-to" class="font-script text-xl sm:text-2xl font-bold text-[#222222]">Para: Mi Pecosita</span>
+        <span class="ml-1 text-[#e63946]">♥</span>
+      </div>
+
+      <button
+        id="reorder-btn"
+        type="button"
+        class="comic-btn pointer-events-auto bg-[#ffd166] hover:bg-[#ffc642] text-[#222222] text-sm sm:text-base font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5"
+        title="Volver a apilar las cartas en el centro"
+      >
+        <span>🐾</span>
+        <span id="reorder-btn-text">Acomoda tus cartas aqui</span>
+      </button>
+    </div>
+
+    <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-40 pointer-events-none">
+      <div id="letters-footer-hint" class="bg-[#fffdf7]/90 px-4 py-1 rounded-full border-2 border-[#222222] text-xs sm:text-sm text-[#222222] whitespace-nowrap shadow-sm">
+        Toca un sobre para abrirlo, los puedes arrastrar y al final te muestro al Amor de mi Vida
+      </div>
+    </div>
+
+    <div id="stage" class="relative w-full h-full flex items-center justify-center">
+      <!-- POLAROID FINAL SORPRESA -->
+      <div id="final-polaroid" title="Arrástrame o haz clic para ver más grande">
+        <div class="absolute -top-5 -right-4 w-12 h-12 bg-[#ffd166] rounded-full border-[2.5px] border-[#222222] flex items-center justify-center shadow-[2px_2px_0_#222]">
+          <svg class="w-7 h-7" viewBox="0 0 32 32">
+            <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+          </svg>
+        </div>
+
+        <div class="polaroid-photo-frame">
+          <img
+            id="final-polaroid-img"
+            src="WhatsApp Image 2026-11-21 at 7.07.10 PM.jpeg"
+            alt="Te Amo Mi Pecosita"
+            onerror="this.style.display='none'; this.nextElementSibling.classList.add('active');"
+          />
+          <div class="fallback-box">
+            <svg class="w-24 h-24 mb-2" viewBox="0 0 120 120" fill="none">
+              <circle cx="60" cy="60" r="52" fill="#ffe5ec" stroke="#222222" stroke-width="3"/>
+              <path d="M60 92 C60 92 28 72 28 50 C28 38 37 30 47 30 C54 30 58 34 60 39 C62 34 66 30 73 30 C83 30 92 38 92 50 C92 72 60 92 60 92 Z" fill="#e63946" stroke="#222222" stroke-width="3"/>
+              <text x="60" y="64" text-anchor="middle" fill="#FFFFFF" font-family="Patrick Hand" font-size="16" font-weight="bold">SNOOPY ♥</text>
+            </svg>
+            <span id="polaroid-fallback-title" class="text-sm font-bold text-[#222222]">Nuestra foto especial</span>
+            <span id="polaroid-fallback-src" class="text-[11px] text-gray-500">WhatsApp Image 2026-11-21 at 7.07.10 PM.jpeg</span>
+          </div>
+        </div>
+
+        <div class="mt-3 text-center">
+          <p id="polaroid-title" class="font-script text-3xl font-bold text-[#e63946] leading-none">
+            Te Amo Mi Pecosita, Te Amo vida Mia
+          </p>
+          <div class="flex items-center justify-center gap-2 mt-1 text-xs text-gray-600 font-type">
+            <span>🐾</span>
+            <span id="polaroid-subtitle">Tócame para ver en grande</span>
+            <span>🐾</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="envelopes-container" class="absolute inset-0 pointer-events-none"></div>
+    </div>
+  </section>
+
+  <!-- MODAL / LIGHTBOX DE ZOOM -->
+  <div id="zoom-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div id="zoom-box" class="relative bg-[#fffdf7] p-3 sm:p-4 rounded-2xl comic-border max-w-[94vw] max-h-[94vh] flex flex-col items-center justify-center text-center">
+      <button
+        id="close-zoom"
+        type="button"
+        class="comic-btn absolute -top-4 -right-4 w-10 h-10 rounded-full bg-[#e63946] text-white font-bold text-xl flex items-center justify-center z-10"
+        aria-label="Cerrar foto"
+      >
+        ✕
+      </button>
+      <div class="overflow-hidden rounded-lg border-[2.5px] border-[#222222] bg-[#fff9fa] flex items-center justify-center p-1 cursor-zoom-out" id="zoom-image-area">
+        <img
+          id="zoom-img"
+          src=""
+          alt="Foto ampliada"
+          onerror="this.style.display='none'; document.getElementById('zoom-fallback').classList.add('active');"
+        />
+        <div id="zoom-fallback" class="fallback-box w-64 h-64">
+          <svg class="w-24 h-24 mb-2" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="52" fill="#ffe5ec" stroke="#222222" stroke-width="3"/>
+            <path d="M60 92 C60 92 28 72 28 50 C28 38 37 30 47 30 C54 30 58 34 60 39 C62 34 66 30 73 30 C83 30 92 38 92 50 C92 72 60 92 60 92 Z" fill="#e63946" stroke="#222222" stroke-width="3"/>
+            <text x="60" y="64" text-anchor="middle" fill="#FFFFFF" font-family="Patrick Hand" font-size="16" font-weight="bold">SNOOPY ♥</text>
+          </svg>
+          <span class="text-sm font-bold text-[#222222]">Vista previa de foto</span>
+          <span id="zoom-fallback-name" class="text-xs text-gray-500 mt-1 break-all"></span>
+        </div>
+      </div>
+      <p id="zoom-caption" class="mt-2.5 font-script text-2xl sm:text-3xl font-bold text-[#222222]"></p>
+      <span id="zoom-hint" class="text-xs text-gray-500 font-type">Toca la foto o fuera para volver</span>
+    </div>
+  </div>
+</div>
+
+<!-- =========================================================================
+     =========================================================================
+     ✏️  ZONA DE EDICIÓN FÁCIL: TODOS LOS TEXTOS, FECHA Y FOTOS AQUÍ  ✏️
+     Cambia cualquier texto entre comillas y se actualizará automáticamente.
+     =========================================================================
+     ========================================================================= -->
+<script>
+  window.TEXTOS_Y_FOTOS = {
+
+    /* -----------------------------------------------------------------------
+       1. TEXTOS DEL JUEGO DE VOLEIBOL CON SNOOPY
+       ----------------------------------------------------------------------- */
+    juego: {
+      tituloPestana: '¡Remate de Punta! - Voley Pro',
+      mensajeSuperior: 'Necesitas un punto para reclamar la recompensa',
+
+      // Pantalla de inicio del juego
+      inicio: {
+        icono: '🐾🏐',
+        titulo: '¡REMATE CON SNOOPY!',
+        subtitulo: '¡Logra 1 punto para reclamar tu premio!',
+        paso1: 'Tu <strong>Armador</strong> levanta el balón. Pulsa <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-amber-300 font-bold">ESPACIO</kbd> o <strong>Toca/Clic</strong> para que <strong>Snoopy salte</strong>.',
+        paso2: 'En el aire, cuando el anillo brille en <strong>"¡REMATA AHORA!"</strong>, pulsa de nuevo para hacer el <strong>remate de punta</strong> hacia el espacio marcado.',
+        paso3: 'Mueve el espacio donde caerá el balón tocando la cancha rival o usando <kbd class="bg-slate-700 px-1.5 py-0.5 rounded text-amber-300 font-bold">◀ ▶</kbd>.',
+        botonJugar: '¡JUGAR!'
+      },
+
+      // Botón inferior
+      botonAccion: '🏐 SALTAR / REMATAR (ESPACIO)',
+
+      // Los 4 carteles de ánimo en las gradas del gimnasio
+      cartelesCancha: [
+        'Tu puedes mi pecosita',
+        'Confio en ti mi pecosita',
+        'Orgulloso de ti mi pecosita',
+        'Tu puedes con todo'
+      ],
+
+      // Ventana emergente al anotar el punto
+      modalVictoria: {
+        etiqueta: '¡PUNTO ANOTADO!',
+        icono: '🌻💖',
+        titulo: 'Esoo mi niña',
+        subtitulo: 'Has recibido una recompensa',
+        botonReclamar: 'Reclamar recompensa',
+        mensajeTransicion: '¡Abriendo tu recompensa...! 💖🌻'
+      },
+
+      // Mensajes flotantes durante el partido
+      mensajesEnCancha: {
+        remataAhora: '¡REMATA AHORA!',
+        muyLejos: '¡MUY LEJOS!',
+        rematePerfecto: '¡REMATE DE PUNTA!',
+        buenRemate: '¡BUEN REMATE!',
+        punto: '¡PUNTO!',
+        intentaDeNuevo: '¡INTENTA DE NUEVO!',
+        recepcionRival: '¡RECEPCIÓN RIVAL!',
+        buenaRecepcion: '¡BUENA RECEPCIÓN!'
+      }
+    },
+
+    /* -----------------------------------------------------------------------
+       2. PANTALLA DE CONTRASEÑA (FECHA ESPECIAL) + COLLAGE DE 7 FOTOS
+       ----------------------------------------------------------------------- */
+    login: {
+      tituloPestana: '8 razones para amarte y quedarme contigo',
+      fechaSecreta: '30/08/2026', // Formato DD/MM/AAAA
+      titulo: '8 razones para amarte y quedarme contigo',
+      subtitulo: 'Como me dijite, Tu sabes cual es la contraseña, pista: Fecha 🌻',
+      placeholderFecha: 'DD/MM/AAAA',
+      mensajeError: 'Mmm... esa no es nuestra fecha especial, ¡intenta de nuevo! 🐾',
+      botonAbrir: 'Abre tus cartas My Life 🌻',
+      tipInferior: 'Tip: Puedes arrastrar y hacer clic en las fotitos de alrededor',
+
+      // Las 7 fotitos flotantes alrededor del cuadro de fecha
+      collageFotos: [
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.03 PM.jpeg',     caption: 'Estar Juntos es lo Mejor 🎀',  pos: { top: '7%',    left: '5%',   rot: -8 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.03 PM (1).jpeg', caption: 'Siempre vas a ser mi Persona Favorita 🌻', pos: { top: '8%',    right: '6%',  rot: 7 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.03 PM (2).jpeg', caption: 'Estare siempre para ti 🎀',   pos: { top: '38%',   left: '3%',   rot: 5 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.03 PM (3).jpeg', caption: 'Amo cada parte de Ti 🌻',       pos: { top: '40%',   right: '4%',  rot: -6 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.04 PM.jpeg',     caption: 'Te Amo Con mi Alma 🌻',          pos: { bottom: '12%', left: '8%',  rot: -5 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.04 PM (1).jpeg', caption: 'Mi Pecosita 🎀 ️',      pos: { bottom: '10%', right: '8%', rot: 8 } },
+        { src: 'WhatsApp Image 2026-11-21 at 6.53.04 PM (2).jpeg', caption: 'Vida Mia 🎀🌻',     pos: { top: '4%',    left: '44%',  rot: -3 } }
+      ]
+    },
+
+    /* -----------------------------------------------------------------------
+       3. LAS 8 CARTAS DE AMOR Y LA FOTO POLAROID FINAL SORPRESA
+       ----------------------------------------------------------------------- */
+    cartas: {
+      encabezadoPara: 'Para: Mi Pecosita',
+      botonReordenar: 'Reordenar cartas',
+      instruccionInferior: 'Toca un sobre para abrirlo, Arrastralo para descubir al otro y Al final te revelo al amor de mi Vida 🌻',
+
+      // Textos impresos en cada sobre rosado
+      sobreDe: 'De: Juan Jose',
+      sobrePara: 'Para: Mi Pecosita 🌙',
+      selloLinea1: 'SNOOPY',
+      selloLinea2: 'POSTAL SERVICE',
+      prefijoRazon: 'Razón #',
+      textoFallbackRecuerdo: 'Recuerdo #',
+
+      // Las 8 razones (puedes cambiar la foto y la frase de cada una)
+      razones: [
+        { num: 1, img: 'WhatsApp Image 2026-11-21 at 6.21.54 PM.jpeg',     text: 'Porque tienes una sonrisa que ilumina mis días' },
+        { num: 2, img: 'WhatsApp Image 2026-11-21 at 6.21.54 PM (1).jpeg', text: 'Por tu ternura incondicional' },
+        { num: 3, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM.jpeg',     text: 'Por la forma tan hermosa en que me miras' },
+        { num: 4, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM (1).jpeg', text: 'Porque contigo incluso el silencio se siente como un hogar' },
+        { num: 5, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM (2).jpeg', text: 'Por cada momento de paz a tu lado' },
+        { num: 6, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM (3).jpeg', text: 'Porque conviertes los dias mas comunes en recuerdos que quiero guardar para siempre' },
+        { num: 7, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM (4).jpeg', text: 'Por la magia que pones en cada detalle' },
+        { num: 8, img: 'WhatsApp Image 2026-11-21 at 6.21.55 PM (5).jpeg', text: 'Porque simplemente, eres tú.' }
+      ],
+
+      // Foto polaroid sorpresa al final de la pila
+      fotoFinal: {
+        img: 'WhatsApp Image 2026-11-21 at 7.07.10 PM.jpeg',
+        titulo: 'Te Amo Mi Pecosita',
+        subtitulo: 'Tócame para ver en grande',
+        tituloZoom: 'Te Amo Mi Pecosita 🌙, Nunca lo olvides, Te Amo Con Mi Alma',
+        textoFallback: 'Nuestra foto especial'
+      },
+
+      // Texto inferior del visor de zoom
+      zoomAyuda: 'Toca la foto o fuera para volver'
+    }
+  };
+
+  // Aplicar automáticamente todos los textos configurados al HTML
+  (function aplicarTextosAlDOM() {
+    const cfg = window.TEXTOS_Y_FOTOS;
+    const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    const setHTML = (id, val) => { const el = document.getElementById(id); if (el) el.innerHTML = val; };
+
+    // 1. Juego
+    document.title = cfg.juego.tituloPestana;
+    setText('game-top-msg', cfg.juego.mensajeSuperior);
+    setText('start-icon', cfg.juego.inicio.icono);
+    setText('start-title', cfg.juego.inicio.titulo);
+    setText('start-subtitle', cfg.juego.inicio.subtitulo);
+    setHTML('start-step-1', cfg.juego.inicio.paso1);
+    setHTML('start-step-2', cfg.juego.inicio.paso2);
+    setHTML('start-step-3', cfg.juego.inicio.paso3);
+    setText('btn-start', cfg.juego.inicio.botonJugar);
+    setText('btn-action', cfg.juego.botonAccion);
+
+    setText('reward-badge', cfg.juego.modalVictoria.etiqueta);
+    setText('reward-icon', cfg.juego.modalVictoria.icono);
+    setText('reward-title', cfg.juego.modalVictoria.titulo);
+    setText('reward-reason', cfg.juego.modalVictoria.subtitulo);
+    setText('btn-claim', cfg.juego.modalVictoria.botonReclamar);
+    setText('claimed-toast', cfg.juego.modalVictoria.mensajeTransicion);
+
+    // 2. Login
+    setText('login-title', cfg.login.titulo);
+    setText('login-subtitle', cfg.login.subtitulo);
+    const dateInput = document.getElementById('date-input');
+    if (dateInput) dateInput.placeholder = cfg.login.placeholderFecha;
+    setText('error-msg', cfg.login.mensajeError);
+    setText('login-btn', cfg.login.botonAbrir);
+    setText('login-tip', cfg.login.tipInferior);
+
+    // 3. Cartas y Polaroid Final
+    setText('letters-header-to', cfg.cartas.encabezadoPara);
+    setText('reorder-btn-text', cfg.cartas.botonReordenar);
+    setText('letters-footer-hint', cfg.cartas.instruccionInferior);
+
+    const finalImg = document.getElementById('final-polaroid-img');
+    if (finalImg) {
+      finalImg.src = cfg.cartas.fotoFinal.img;
+      finalImg.alt = cfg.cartas.fotoFinal.titulo;
+    }
+    setText('polaroid-fallback-title', cfg.cartas.fotoFinal.textoFallback);
+    setText('polaroid-fallback-src', cfg.cartas.fotoFinal.img);
+    setText('polaroid-title', cfg.cartas.fotoFinal.titulo);
+    setText('polaroid-subtitle', cfg.cartas.fotoFinal.subtitulo);
+    setText('zoom-hint', cfg.cartas.zoomAyuda);
+  })();
+</script>
+
+<!-- =========================================================================
+     SCRIPT 1: LÓGICA DE LA PÁGINA DE RECOMPENSA ("8 RAZONES PARA AMARTE")
+     ========================================================================= -->
+<script>
+  (function () {
+    'use strict';
+
+    const cfgLogin = window.TEXTOS_Y_FOTOS.login;
+    const cfgCartas = window.TEXTOS_Y_FOTOS.cartas;
+
+    const collagePhotos = cfgLogin.collageFotos;
+    const reasonsData = cfgCartas.razones;
+    const SECRET_DATE = cfgLogin.fechaSecreta;
+    let topZIndex = 100;
+    let polaroidRevealed = false;
+    let collageRendered = false;
+
+    const rewardView = document.getElementById('reward-view');
+    const loginScreen = document.getElementById('login-screen');
+    const lettersScreen = document.getElementById('letters-screen');
+    const loginForm = document.getElementById('login-form');
+    const loginCard = document.getElementById('login-card');
+    const dateInput = document.getElementById('date-input');
+    const errorMsg = document.getElementById('error-msg');
+    const collageContainer = document.getElementById('collage-container');
+    const envelopesContainer = document.getElementById('envelopes-container');
+    const finalPolaroid = document.getElementById('final-polaroid');
+    const reorderBtn = document.getElementById('reorder-btn');
+
+    const zoomModal = document.getElementById('zoom-modal');
+    const zoomImg = document.getElementById('zoom-img');
+    const zoomFallback = document.getElementById('zoom-fallback');
+    const zoomFallbackName = document.getElementById('zoom-fallback-name');
+    const zoomCaption = document.getElementById('zoom-caption');
+    const closeZoom = document.getElementById('close-zoom');
+    const zoomImageArea = document.getElementById('zoom-image-area');
+
+    function makeDraggable(el, { onClick, onDragEnd, onDragMove } = {}) {
+      let isDragging = false;
+      let startX = 0, startY = 0;
+      let initialLeft = 0, initialTop = 0;
+      let moved = false;
+      let downTarget = null;
+
+      const getPoint = (e) => {
+        if (e.touches && e.touches.length > 0) {
+          return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        }
+        return { x: e.clientX, y: e.clientY };
+      };
+
+      const onDown = (e) => {
+        if (e.target.closest('button')) return;
+        isDragging = true;
+        moved = false;
+        downTarget = e.target;
+        const pt = getPoint(e);
+        startX = pt.x;
+        startY = pt.y;
+
+        const rect = el.getBoundingClientRect();
+        el.style.right = 'auto';
+        el.style.bottom = 'auto';
+        el.style.left = rect.left + 'px';
+        el.style.top = rect.top + 'px';
+
+        initialLeft = rect.left;
+        initialTop = rect.top;
+
+        topZIndex += 1;
+        el.style.zIndex = topZIndex;
+        el.classList.add('dragging');
+      };
+
+      const onMove = (e) => {
+        if (!isDragging) return;
+        const pt = getPoint(e);
+        const dx = pt.x - startX;
+        const dy = pt.y - startY;
+
+        if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+          moved = true;
+        }
+
+        el.style.left = (initialLeft + dx) + 'px';
+        el.style.top = (initialTop + dy) + 'px';
+
+        if (onDragMove) onDragMove(el);
+      };
+
+      const onUp = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        el.classList.remove('dragging');
+
+        if (!moved && onClick) {
+          onClick(el, downTarget);
+        } else if (moved && onDragEnd) {
+          onDragEnd(el);
+        }
+      };
+
+      el.addEventListener('mousedown', onDown);
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('mouseup', onUp);
+
+      el.addEventListener('touchstart', onDown, { passive: true });
+      window.addEventListener('touchmove', onMove, { passive: false });
+      window.addEventListener('touchend', onUp);
+    }
+
+    function openZoom(src, caption) {
+      zoomFallback.classList.remove('active');
+      zoomImg.style.display = 'block';
+      zoomImg.src = src;
+      zoomFallbackName.textContent = src;
+      zoomCaption.textContent = caption || '';
+      zoomModal.classList.remove('hidden');
+      zoomModal.classList.add('flex');
+    }
+
+    function hideZoom() {
+      zoomModal.classList.add('hidden');
+      zoomModal.classList.remove('flex');
+    }
+
+    closeZoom.addEventListener('click', hideZoom);
+    zoomImageArea.addEventListener('click', hideZoom);
+    zoomModal.addEventListener('click', (e) => {
+      if (e.target === zoomModal) {
+        hideZoom();
+      }
+    });
+
+    function renderCollage() {
+      if (collageRendered) return;
+      collageRendered = true;
+      collageContainer.innerHTML = '';
+      collagePhotos.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'collage-photo pointer-events-auto';
+        if (item.pos.top) card.style.top = item.pos.top;
+        if (item.pos.bottom) card.style.bottom = item.pos.bottom;
+        if (item.pos.left) card.style.left = item.pos.left;
+        if (item.pos.right) card.style.right = item.pos.right;
+        card.style.transform = `rotate(${item.pos.rot}deg)`;
+
+        const delay = (idx * 0.55).toFixed(2);
+        card.innerHTML = `
+            <div class="collage-inner" style="animation-delay: ${delay}s;">
+              <div class="photo-frame">
+                <img src="${item.src}" alt="${item.caption}" onerror="this.style.display='none'; this.nextElementSibling.classList.add('active');" />
+                <div class="fallback-box">
+                  <svg class="w-10 h-10 mb-1" viewBox="0 0 32 32">
+                    <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+                  </svg>
+                  <span class="text-[10px] font-bold text-[#222222]">Foto #${idx + 1}</span>
+                </div>
+              </div>
+              <div class="text-center text-[11px] sm:text-xs font-bold text-[#222222] mt-1 truncate">
+                ${item.caption}
+              </div>
+            </div>
+          `;
+
+        collageContainer.appendChild(card);
+
+        makeDraggable(card, {
+          onClick: () => openZoom(item.src, item.caption)
+        });
+      });
+    }
+
+    function unlockLetters() {
+      loginScreen.style.opacity = '0';
+      setTimeout(() => {
+        loginScreen.classList.add('hidden');
+        lettersScreen.classList.remove('hidden');
+        initLettersStage();
+        requestAnimationFrame(() => {
+          lettersScreen.style.opacity = '1';
+        });
+      }, 480);
+    }
+
+    function showDateError() {
+      errorMsg.classList.remove('opacity-0');
+      loginCard.classList.remove('anim-shake');
+      void loginCard.offsetWidth;
+      loginCard.classList.add('anim-shake');
+    }
+
+    dateInput.addEventListener('input', (e) => {
+      let digits = e.target.value.replace(/\D/g, '').slice(0, 8);
+      let formatted = '';
+      if (digits.length > 0) formatted = digits.slice(0, 2);
+      if (digits.length >= 3) formatted += '/' + digits.slice(2, 4);
+      if (digits.length >= 5) formatted += '/' + digits.slice(4, 8);
+      e.target.value = formatted;
+      errorMsg.classList.add('opacity-0');
+
+      if (formatted.length === 10) {
+        if (formatted === SECRET_DATE) {
+          unlockLetters();
+        } else {
+          showDateError();
+        }
+      }
+    });
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (dateInput.value.trim() === SECRET_DATE) {
+        unlockLetters();
+      } else {
+        showDateError();
+      }
+    });
+
+    function createEnvelopeElement(reason, index) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'envelope-wrapper pointer-events-auto';
+      wrapper.dataset.num = reason.num;
+
+      const zOrder = 20 + (8 - index);
+      wrapper.style.zIndex = zOrder;
+
+      wrapper.innerHTML = `
+          <div class="envelope-body">
+            <div class="letter-card">
+              <div class="w-full flex items-center justify-between border-b-2 border-dashed border-[#222222]/30 pb-1">
+                <span class="text-xs font-type font-bold text-[#e63946]">${cfgCartas.prefijoRazon}${reason.num}</span>
+                <span class="text-xs">🐾 ♥ 🐾</span>
+              </div>
+
+              <div class="letter-photo-frame letter-photo-trigger" title="Toca para ver la foto completa en grande">
+                <img
+                  src="${reason.img}"
+                  alt="${cfgCartas.prefijoRazon}${reason.num}"
+                  onerror="this.style.display='none'; this.nextElementSibling.classList.add('active');"
+                />
+                <div class="fallback-box">
+                  <svg class="w-12 h-12 mb-1" viewBox="0 0 32 32">
+                    <path d="M16 28 C16 28 4 20 4 11.5 C4 7.5 7.2 4.5 11 4.5 C13.5 4.5 15.2 6 16 7.5 C16.8 6 18.5 4.5 21 4.5 C24.8 4.5 28 7.5 28 11.5 C28 20 16 28 16 28 Z" fill="#e63946" stroke="#222222" stroke-width="2.2"/>
+                  </svg>
+                  <span class="text-xs font-bold text-[#222222]">${cfgCartas.textoFallbackRecuerdo}${reason.num}</span>
+                </div>
+              </div>
+
+              <p class="font-type text-[13px] sm:text-sm font-bold text-center text-[#222222] leading-snug px-1">
+                "${reason.text}"
+              </p>
+            </div>
+
+            <div class="envelope-front">
+              <div class="absolute top-2.5 right-3 w-14 h-14 rounded-full border-2 border-dashed border-[#222222]/70 bg-[#fffdf7]/80 flex flex-col items-center justify-center rotate-12 text-center p-0.5">
+                <span class="text-[6.5px] font-type font-bold leading-tight tracking-tighter text-[#222222]">${cfgCartas.selloLinea1}</span>
+                <svg class="w-4 h-4 my-0.5" viewBox="0 0 40 40" fill="none">
+                  <path d="M6 21 L20 9 L34 21 Z" fill="#e63946" stroke="#222222" stroke-width="2.5" stroke-linejoin="round"/>
+                  <rect x="10" y="21" width="20" height="14" fill="#e63946" stroke="#222222" stroke-width="2.5"/>
+                  <path d="M16 35 V26 C16 23 24 23 24 26 V35 Z" fill="#222222"/>
+                </svg>
+                <span class="text-[5.5px] font-type font-bold leading-none text-[#222222]">${cfgCartas.selloLinea2}</span>
+              </div>
+
+              <div class="absolute top-3 left-3 flex items-center gap-1 opacity-65">
+                <svg class="w-6 h-6" viewBox="0 0 40 40" fill="#222222">
+                  <ellipse cx="20" cy="26" rx="8" ry="6"/>
+                  <circle cx="11" cy="17" r="3"/><circle cx="17" cy="12" r="3"/><circle cx="24" cy="12" r="3"/><circle cx="30" cy="17" r="3"/>
+                </svg>
+                <span class="text-lg font-bold tracking-tighter text-[#222222]/70 -rotate-6">≈≈≈≈</span>
+              </div>
+
+              <div class="absolute bottom-2.5 left-4 right-4 flex items-end justify-between text-[#222222]">
+                <div>
+                  <div class="font-script text-xl sm:text-2xl font-bold leading-tight">${cfgCartas.sobreDe}</div>
+                </div>
+                <div class="text-right">
+                  <div class="font-script text-xl sm:text-2xl font-bold text-[#c1121f] leading-tight">${cfgCartas.sobrePara}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="envelope-flap">
+              <svg class="w-full h-full" viewBox="0 0 315 114" preserveAspectRatio="none">
+                <polygon points="2,2 313,2 157.5,96" fill="#f4a4ba" stroke="#222222" stroke-width="3" stroke-linejoin="round"/>
+              </svg>
+            </div>
+
+            <div class="heart-seal">
+              <svg class="w-full h-full drop-shadow-sm" viewBox="0 0 44 44">
+                <path d="M22 39 C22 39 5 28 5 15.5 C5 9.5 9.5 5.5 15 5.5 C18.5 5.5 21 7.5 22 10 C23 7.5 25.5 5.5 29 5.5 C34.5 5.5 39 9.5 39 15.5 C39 28 22 39 22 39 Z" fill="#e63946" stroke="#222222" stroke-width="2.6"/>
+                <text x="22" y="25" text-anchor="middle" fill="#FFFFFF" font-family="Patrick Hand" font-size="18" font-weight="bold">${reason.num}</text>
+              </svg>
+            </div>
+          </div>
+        `;
+
+      return wrapper;
+    }
+
+    // Oculta la foto polaroid final y la devuelve al final de la pila (detrás de los 8 sobres)
+    function resetFinalPolaroid() {
+      polaroidRevealed = false;
+      finalPolaroid.classList.remove('revealed', 'dragging');
+      finalPolaroid.style.zIndex = 5;
+      finalPolaroid.style.right = 'auto';
+      finalPolaroid.style.bottom = 'auto';
+      finalPolaroid.style.transform = '';
+
+      const stageRect = document.getElementById('stage').getBoundingClientRect();
+      const pW = finalPolaroid.offsetWidth || 260;
+      const pH = finalPolaroid.offsetHeight || 340;
+      finalPolaroid.style.left = (stageRect.width / 2 - pW / 2) + 'px';
+      finalPolaroid.style.top = (stageRect.height / 2 - pH / 2) + 'px';
+    }
+
+    function stackEnvelopesCenter() {
+      const stageRect = document.getElementById('stage').getBoundingClientRect();
+      const centerX = stageRect.width / 2;
+      const centerY = stageRect.height / 2;
+
+      const envelopes = envelopesContainer.querySelectorAll('.envelope-wrapper');
+      envelopes.forEach((env, idx) => {
+        env.classList.remove('open');
+        const w = env.offsetWidth || 310;
+        const h = env.offsetHeight || 215;
+
+        const offsetAngle = (idx % 2 === 0 ? 1 : -1) * (idx * 1.1);
+        const offsetX = (idx - 3.5) * 2.2;
+        const offsetY = (idx - 3.5) * 2.2;
+
+        env.style.left = (centerX - w / 2 + offsetX) + 'px';
+        env.style.top = (centerY - h / 2 + offsetY) + 'px';
+        env.style.transform = `rotate(${offsetAngle}deg)`;
+        env.style.zIndex = 20 + (8 - idx);
+      });
+    }
+
+    function checkRevealPolaroid(el) {
+      if (polaroidRevealed) return;
+      if (Number(el.dataset.num) !== 8) return;
+
+      const stageRect = document.getElementById('stage').getBoundingClientRect();
+      const centerX = stageRect.width / 2;
+      const centerY = stageRect.height / 2;
+
+      const rect = el.getBoundingClientRect();
+      const envCenterX = rect.left + rect.width / 2;
+      const envCenterY = rect.top + rect.height / 2;
+
+      const dist = Math.hypot(envCenterX - centerX, envCenterY - centerY);
+      if (dist > 140) {
+        polaroidRevealed = true;
+        finalPolaroid.classList.add('revealed');
+      }
+    }
+
+    function initLettersStage() {
+      envelopesContainer.innerHTML = '';
+      resetFinalPolaroid();
+
+      reasonsData.forEach((reason, idx) => {
+        const env = createEnvelopeElement(reason, idx);
+        envelopesContainer.appendChild(env);
+
+        makeDraggable(env, {
+          onClick: (el, target) => {
+            if (el.classList.contains('open') && target && target.closest('.letter-photo-trigger')) {
+              openZoom(reason.img, `${cfgCartas.prefijoRazon}${reason.num}: "${reason.text}"`);
+              return;
+            }
+            el.classList.toggle('open');
+            topZIndex += 1;
+            el.style.zIndex = topZIndex;
+          },
+          onDragMove: (el) => checkRevealPolaroid(el),
+          onDragEnd: (el) => checkRevealPolaroid(el)
+        });
+      });
+
+      stackEnvelopesCenter();
+
+      makeDraggable(finalPolaroid, {
+        onClick: () => {
+          if (polaroidRevealed) {
+            openZoom(cfgCartas.fotoFinal.img, cfgCartas.fotoFinal.tituloZoom);
+          }
+        }
+      });
+    }
+
+    reorderBtn.addEventListener('click', () => {
+      resetFinalPolaroid();
+      stackEnvelopesCenter();
+    });
+
+    window.addEventListener('resize', () => {
+      if (rewardView.classList.contains('active') && !lettersScreen.classList.contains('hidden')) {
+        if (!polaroidRevealed) {
+          resetFinalPolaroid();
+        }
+        stackEnvelopesCenter();
+      }
+    });
+
+    // Exponer función global para abrir la página de las 8 razones al reclamar la recompensa
+    window.openLoveRewardPage = function () {
+      document.title = cfgLogin.tituloPestana;
+      rewardView.classList.add('active');
+      renderCollage();
+      requestAnimationFrame(() => {
+        rewardView.classList.add('visible');
+      });
+    };
+  })();
+</script>
+
+<!-- =========================================================================
+     SCRIPT 2: LÓGICA DEL JUEGO DE VOLEIBOL CON SNOOPY
+     ========================================================================= -->
+<script>
+  (function () {
+    'use strict';
+
+    const cfgJuego = window.TEXTOS_Y_FOTOS.juego;
+    const msgCancha = cfgJuego.mensajesEnCancha;
+
+    const gameView = document.getElementById('game-view');
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const startOverlay = document.getElementById('start-overlay');
+    const rewardModal = document.getElementById('reward-modal');
+    const claimedToast = document.getElementById('claimed-toast');
+    const statusTextEl = document.getElementById('status-text');
+
+    const btnStart = document.getElementById('btn-start');
+    const btnClaim = document.getElementById('btn-claim');
+    const btnAction = document.getElementById('btn-action');
+
+    const VW = 1200;
+    const VH = 650;
+
+    const FLOOR_Y = 530;
+    const COURT_LEFT = 70;
+    const COURT_RIGHT = 1130;
+    const NET_X = 600;
+    const NET_TOP_Y = 335;
+    const NET_BOTTOM_Y = FLOOR_Y;
+    const GRAVITY = 1260;
+
+    let audioCtx = null;
+
+    function ensureAudio() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(() => {});
+      }
+    }
+
+    function playSound(type) {
+      try {
+        ensureAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+
+        if (type === 'set' || type === 'dig') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(type === 'set' ? 320 : 230, now);
+          osc.frequency.exponentialRampToValueAtTime(type === 'set' ? 520 : 140, now + 0.09);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.11);
+        } else if (type === 'jump') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(170, now);
+          osc.frequency.exponentialRampToValueAtTime(420, now + 0.16);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.18);
+        } else if (type === 'spike' || type === 'perfectSpike') {
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(type === 'perfectSpike' ? 280 : 210, now);
+          osc.frequency.exponentialRampToValueAtTime(52, now + 0.18);
+          gain.gain.setValueAtTime(type === 'perfectSpike' ? 0.35 : 0.25, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.19);
+          osc.connect(gain);
+          gain.connect(audioCtx.destination);
+          osc.start(now);
+          osc.stop(now + 0.2);
+        } else if (type === 'point') {
+          const notes = [523.25, 659.25, 783.99, 1046.5];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            const t = now + idx * 0.08;
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.22, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.36);
+          });
+        } else if (type === 'claim') {
+          const notes = [587.33, 739.99, 880, 1174.66, 1318.5];
+          notes.forEach((freq, idx) => {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sine';
+            const t = now + idx * 0.06;
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.24, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(t);
+            osc.stop(t + 0.42);
+          });
+        }
+      } catch (err) {
+        // Ignorar errores de audio
+      }
+    }
+
+    const state = {
+      started: false,
+      pausedForModal: false,
+      transitionedToReward: false,
+      attempts: 1,
+      maxAttempts: 8,
+      targetLandingX: 885,
+      phase: 'IDLE',
+      phaseTimer: 0,
+      rallyCount: 0,
+      hasSpiked: false,
+      canSpikeNow: false,
+      currentSpikeScores: false,
+      timingScore: 0,
+      screenShake: 0,
+      lastTime: 0
+    };
+
+    const ball = {
+      x: 240,
+      y: 380,
+      vx: 0,
+      vy: 0,
+      radius: 17,
+      angle: 0,
+      spin: 4,
+      trail: [],
+      powerMode: false
+    };
+
+    const snoopy = {
+      x: 250,
+      y: FLOOR_Y,
+      baseX: 250,
+      vx: 0,
+      vy: 0,
+      jumping: false,
+      spikeAnim: 0,
+      runCycle: 0
+    };
+
+    const playerSetter = {
+      x: 505,
+      y: FLOOR_Y,
+      baseX: 505,
+      armRaise: 0,
+      jersey: '#0284c7',
+      shorts: '#0f172a',
+      hair: '#1e293b',
+      skin: '#f1c27d',
+      number: '10',
+      facing: -1
+    };
+
+    const playerLibero = {
+      x: 190,
+      y: FLOOR_Y,
+      baseX: 190,
+      digAnim: 0,
+      jersey: '#f59e0b',
+      shorts: '#0f172a',
+      hair: '#78350f',
+      skin: '#e0ac69',
+      number: '3',
+      facing: 1
+    };
+
+    const enemyBlocker = {
+      x: 655,
+      y: FLOOR_Y,
+      baseX: 655,
+      vy: 0,
+      jumping: false,
+      blockHands: 0,
+      jersey: '#e11d48',
+      shorts: '#1e1b4b',
+      hair: '#0f172a',
+      skin: '#d99b66',
+      number: '12',
+      facing: -1
+    };
+
+    const enemyDef1 = {
+      x: 835,
+      y: FLOOR_Y,
+      baseX: 835,
+      targetX: 835,
+      digAnim: 0,
+      diveX: 0,
+      jersey: '#e11d48',
+      shorts: '#1e1b4b',
+      hair: '#3f2e21',
+      skin: '#f1c27d',
+      number: '7',
+      facing: -1
+    };
+
+    const enemyDef2 = {
+      x: 1020,
+      y: FLOOR_Y,
+      baseX: 1020,
+      targetX: 1020,
+      digAnim: 0,
+      diveX: 0,
+      jersey: '#be123c',
+      shorts: '#1e1b4b',
+      hair: '#1e293b',
+      skin: '#c68642',
+      number: '5',
+      facing: -1
+    };
+
+    const particles = [];
+    const floatingTexts = [];
+    const confetti = [];
+
+    const banners = [
+      { text: cfgJuego.cartelesCancha[0] || '', x: 185,  bg: '#0284c7', border: '#7dd3fc' },
+      { text: cfgJuego.cartelesCancha[1] || '', x: 465,  bg: '#db2777', border: '#f9a8d4' },
+      { text: cfgJuego.cartelesCancha[2] || '', x: 755,  bg: '#7c3aed', border: '#c4b5fd' },
+      { text: cfgJuego.cartelesCancha[3] || '', x: 1025, bg: '#d97706', border: '#fde68a' }
+    ];
+
+    function updateAttemptUI() {
+      if (statusTextEl) {
+        statusTextEl.textContent = String(state.attempts);
+      }
+    }
+
+    function adjustTargetLanding(deltaX) {
+      state.targetLandingX = Math.max(NET_X + 75, Math.min(COURT_RIGHT - 35, state.targetLandingX + deltaX));
+    }
+
+    function setTargetFromPointer(clientX) {
+      const rect = canvas.getBoundingClientRect();
+      if (!rect.width) return;
+      const vx = ((clientX - rect.left) / rect.width) * VW;
+      if (vx > NET_X + 45) {
+        state.targetLandingX = Math.max(NET_X + 75, Math.min(COURT_RIGHT - 35, vx));
+      }
+    }
+
+    function spawnParticles(x, y, color, count, speed = 260) {
+      for (let i = 0; i < count; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const s = (0.3 + Math.random() * 0.7) * speed;
+        particles.push({
+          x,
+          y,
+          vx: Math.cos(a) * s,
+          vy: Math.sin(a) * s - 60,
+          life: 0.45 + Math.random() * 0.35,
+          maxLife: 0.8,
+          size: 3 + Math.random() * 5,
+          color
+        });
+      }
+    }
+
+    function spawnFloatingText(x, y, text, color = '#fde047', size = 24) {
+      floatingTexts.push({
+        x,
+        y,
+        vy: -55,
+        text,
+        color,
+        size,
+        life: 1.15,
+        maxLife: 1.15
+      });
+    }
+
+    function spawnConfetti() {
+      confetti.length = 0;
+      const colors = ['#facc15', '#38bdf8', '#f43f5e', '#34d399', '#c084fc', '#fb923c'];
+      for (let i = 0; i < 95; i++) {
+        confetti.push({
+          x: Math.random() * VW,
+          y: -20 - Math.random() * 240,
+          vx: (Math.random() - 0.5) * 180,
+          vy: 140 + Math.random() * 220,
+          rot: Math.random() * Math.PI * 2,
+          vRot: (Math.random() - 0.5) * 8,
+          w: 8 + Math.random() * 7,
+          h: 5 + Math.random() * 5,
+          color: colors[i % colors.length]
+        });
+      }
+    }
+
+    function resetPositions() {
+      snoopy.x = snoopy.baseX;
+      snoopy.y = FLOOR_Y;
+      snoopy.vx = 0;
+      snoopy.vy = 0;
+      snoopy.jumping = false;
+      snoopy.spikeAnim = 0;
+
+      playerSetter.x = playerSetter.baseX;
+      playerSetter.armRaise = 0;
+      playerSetter.facing = -1;
+
+      playerLibero.x = playerLibero.baseX;
+      playerLibero.digAnim = 0;
+
+      enemyBlocker.x = enemyBlocker.baseX;
+      enemyBlocker.y = FLOOR_Y;
+      enemyBlocker.vy = 0;
+      enemyBlocker.jumping = false;
+      enemyBlocker.blockHands = 0;
+
+      enemyDef1.x = enemyDef1.baseX;
+      enemyDef1.targetX = enemyDef1.baseX;
+      enemyDef1.digAnim = 0;
+      enemyDef1.diveX = 0;
+
+      enemyDef2.x = enemyDef2.baseX;
+      enemyDef2.targetX = enemyDef2.baseX;
+      enemyDef2.digAnim = 0;
+      enemyDef2.diveX = 0;
+
+      ball.trail = [];
+      ball.powerMode = false;
+    }
+
+    function startRally() {
+      if (state.transitionedToReward) return;
+      resetPositions();
+      state.rallyCount = 1;
+      state.hasSpiked = false;
+      state.canSpikeNow = false;
+      state.phase = 'PASS_TO_SETTER';
+      state.phaseTimer = 0;
+      updateAttemptUI();
+
+      ball.x = playerLibero.x + 25;
+      ball.y = FLOOR_Y - 75;
+      playerLibero.digAnim = 1;
+
+      const targetX = playerSetter.x - 10;
+      const targetY = FLOOR_Y - 125;
+      const flightTime = 0.72;
+      ball.vx = (targetX - ball.x) / flightTime;
+      ball.vy = (targetY - ball.y - 0.5 * GRAVITY * flightTime * flightTime) / flightTime;
+      ball.spin = 5;
+      playSound('dig');
+    }
+
+    function triggerSetToSpiker() {
+      state.phase = 'SET_TO_SPIKER';
+      state.phaseTimer = 0;
+      state.hasSpiked = false;
+      state.canSpikeNow = false;
+
+      playerSetter.armRaise = 1;
+      playerSetter.facing = -1;
+      playSound('set');
+      spawnParticles(ball.x, ball.y, '#7dd3fc', 10, 140);
+
+      const apexTargetX = 435;
+      const apexTargetY = 175;
+      const tToApex = 0.85;
+      ball.vx = (apexTargetX - ball.x) / tToApex;
+      ball.vy = (apexTargetY - ball.y - 0.5 * GRAVITY * tToApex * tToApex) / tToApex;
+      ball.spin = -4;
+
+      snoopy.vx = 135;
+    }
+
+    function handlePlayerAction() {
+      if (!state.started || state.pausedForModal || state.transitionedToReward) return;
+
+      if (state.phase === 'SET_TO_SPIKER') {
+        if (!snoopy.jumping && !state.hasSpiked) {
+          snoopy.jumping = true;
+          snoopy.vy = -660;
+          const timeToPeak = 0.52;
+          const predictedBallX = ball.x + ball.vx * timeToPeak;
+          const idealX = Math.max(330, Math.min(NET_X - 65, predictedBallX - 24));
+          snoopy.vx = (idealX - snoopy.x) / timeToPeak;
+          playSound('jump');
+          spawnParticles(snoopy.x, FLOOR_Y, '#e2e8f0', 10, 130);
+          return;
+        }
+
+        if (snoopy.jumping && !state.hasSpiked) {
+          executeSpike();
+        }
+      }
+    }
+
+    function executeSpike() {
+      const dx = ball.x - (snoopy.x + 22);
+      const dy = ball.y - (snoopy.y - 78);
+      const dist = Math.hypot(dx, dy);
+
+      if (dist > 145) {
+        spawnFloatingText(snoopy.x, snoopy.y - 125, msgCancha.muyLejos, '#fb7185', 20);
+        return;
+      }
+
+      state.hasSpiked = true;
+      snoopy.spikeAnim = 1;
+
+      const accuracy = Math.max(0, Math.min(1, 1 - dist / 145));
+      state.timingScore = accuracy;
+
+      const isGuaranteedAttempt = state.attempts >= state.maxAttempts;
+      // 15% de probabilidad de anotar del intento 1 al 7, y 100% en el intento 8
+      const willScore = isGuaranteedAttempt ? true : (Math.random() < 0.15);
+      state.currentSpikeScores = willScore;
+
+      const isPerfect = accuracy >= 0.62 || isGuaranteedAttempt || willScore;
+
+      state.phase = 'SPIKE_FLIGHT';
+      state.phaseTimer = 0;
+      ball.powerMode = isPerfect;
+      state.screenShake = isPerfect ? 10 : 5;
+
+      playSound(isPerfect ? 'perfectSpike' : 'spike');
+      spawnParticles(ball.x, ball.y, isPerfect ? '#facc15' : '#38bdf8', isPerfect ? 24 : 14, 340);
+      spawnFloatingText(
+        ball.x,
+        ball.y - 30,
+        isPerfect ? msgCancha.rematePerfecto : msgCancha.buenRemate,
+        isPerfect ? '#fde047' : '#7dd3fc',
+        isPerfect ? 26 : 22
+      );
+
+      const landX = state.targetLandingX;
+      const flightTime = isPerfect ? 0.56 : 0.68;
+      ball.vx = (landX - ball.x) / flightTime;
+      ball.vy = (FLOOR_Y - ball.radius - ball.y - 0.5 * GRAVITY * flightTime * flightTime) / flightTime;
+      ball.spin = isPerfect ? 24 : 16;
+
+      enemyBlocker.jumping = true;
+      enemyBlocker.vy = -520;
+      enemyBlocker.blockHands = 1;
+
+      if (willScore) {
+        enemyDef1.targetX = landX > 880 ? Math.max(NET_X + 95, landX - 165) : Math.min(COURT_RIGHT - 60, landX + 165);
+        enemyDef2.targetX = landX > 880 ? Math.min(COURT_RIGHT - 45, landX + 150) : Math.min(COURT_RIGHT - 45, landX + 260);
+      } else {
+        const d1 = Math.abs(landX - enemyDef1.x);
+        const d2 = Math.abs(landX - enemyDef2.x);
+        if (d1 <= d2) {
+          enemyDef1.targetX = landX;
+          enemyDef2.targetX = Math.min(COURT_RIGHT - 55, Math.max(NET_X + 160, landX + 155));
+        } else {
+          enemyDef2.targetX = landX;
+          enemyDef1.targetX = Math.max(NET_X + 110, Math.min(COURT_RIGHT - 160, landX - 155));
+        }
+      }
+    }
+
+    function awardPointAndReward() {
+      state.phase = 'POINT_PAUSE';
+      state.pausedForModal = true;
+      playSound('point');
+      spawnParticles(ball.x, FLOOR_Y - 12, '#facc15', 30, 320);
+      spawnFloatingText(ball.x, FLOOR_Y - 60, msgCancha.punto, '#fde047', 34);
+      spawnConfetti();
+
+      setTimeout(() => {
+        if (!state.transitionedToReward) {
+          rewardModal.classList.remove('hidden');
+        }
+      }, 450);
+    }
+
+    // Al hacer clic en "Reclamar recompensa", pasar a la página de las 8 razones
+    function claimReward() {
+      if (state.transitionedToReward) return;
+      state.transitionedToReward = true;
+
+      playSound('claim');
+      rewardModal.classList.add('hidden');
+      claimedToast.classList.remove('hidden');
+      spawnConfetti();
+
+      // Mostrar la página de las 8 razones debajo y desvanecer el juego
+      if (typeof window.openLoveRewardPage === 'function') {
+        window.openLoveRewardPage();
+      }
+
+      setTimeout(() => {
+        gameView.style.opacity = '0';
+        gameView.style.pointerEvents = 'none';
+        setTimeout(() => {
+          gameView.style.display = 'none';
+        }, 620);
+      }, 650);
+    }
+
+    function nextAttempt() {
+      if (state.transitionedToReward) return;
+      if (state.attempts < state.maxAttempts) {
+        state.attempts += 1;
+      }
+      updateAttemptUI();
+      startRally();
+    }
+
+    function update(dt) {
+      if (!state.started) return;
+
+      for (let i = confetti.length - 1; i >= 0; i--) {
+        const c = confetti[i];
+        c.x += c.vx * dt;
+        c.y += c.vy * dt;
+        c.rot += c.vRot * dt;
+        if (c.y > VH + 30) confetti.splice(i, 1);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx * dt;
+        p.y += p.vy * dt;
+        p.vy += 450 * dt;
+        p.life -= dt;
+        if (p.life <= 0) particles.splice(i, 1);
+      }
+
+      for (let i = floatingTexts.length - 1; i >= 0; i--) {
+        const ft = floatingTexts[i];
+        ft.y += ft.vy * dt;
+        ft.life -= dt;
+        if (ft.life <= 0) floatingTexts.splice(i, 1);
+      }
+
+      if (state.screenShake > 0) {
+        state.screenShake = Math.max(0, state.screenShake - dt * 35);
+      }
+
+      if (state.pausedForModal) return;
+
+      state.phaseTimer += dt;
+
+      snoopy.spikeAnim = Math.max(0, snoopy.spikeAnim - dt * 2.5);
+      playerSetter.armRaise = Math.max(0, playerSetter.armRaise - dt * 2.2);
+      playerLibero.digAnim = Math.max(0, playerLibero.digAnim - dt * 2.4);
+      enemyBlocker.blockHands = Math.max(0, enemyBlocker.blockHands - dt * 2.0);
+      enemyDef1.digAnim = Math.max(0, enemyDef1.digAnim - dt * 2.2);
+      enemyDef2.digAnim = Math.max(0, enemyDef2.digAnim - dt * 2.2);
+      enemyDef1.diveX *= Math.max(0, 1 - dt * 5);
+      enemyDef2.diveX *= Math.max(0, 1 - dt * 5);
+
+      if (snoopy.jumping) {
+        snoopy.x += snoopy.vx * dt;
+        snoopy.y += snoopy.vy * dt;
+        snoopy.vy += GRAVITY * dt;
+        if (snoopy.y >= FLOOR_Y) {
+          snoopy.y = FLOOR_Y;
+          snoopy.vy = 0;
+          snoopy.vx = 0;
+          snoopy.jumping = false;
+        }
+      } else if (state.phase === 'SET_TO_SPIKER' && !state.hasSpiked) {
+        snoopy.x = Math.min(410, snoopy.x + snoopy.vx * dt);
+        snoopy.runCycle += dt * 14;
+      } else {
+        snoopy.x += (snoopy.baseX - snoopy.x) * Math.min(1, dt * 6);
+      }
+
+      if (enemyBlocker.jumping) {
+        enemyBlocker.y += enemyBlocker.vy * dt;
+        enemyBlocker.vy += GRAVITY * dt;
+        if (enemyBlocker.y >= FLOOR_Y) {
+          enemyBlocker.y = FLOOR_Y;
+          enemyBlocker.vy = 0;
+          enemyBlocker.jumping = false;
+        }
+      }
+
+      enemyDef1.x += (enemyDef1.targetX - enemyDef1.x) * Math.min(1, dt * 6.5);
+      enemyDef2.x += (enemyDef2.targetX - enemyDef2.x) * Math.min(1, dt * 6.5);
+
+      if (state.phase !== 'IDLE' && state.phase !== 'POINT_PAUSE') {
+        ball.x += ball.vx * dt;
+        ball.y += ball.vy * dt;
+        ball.vy += GRAVITY * dt;
+        ball.angle += ball.spin * dt;
+
+        ball.trail.push({ x: ball.x, y: ball.y, power: ball.powerMode });
+        if (ball.trail.length > 14) ball.trail.shift();
+      }
+
+      if (state.phase === 'PASS_TO_SETTER') {
+        if (ball.vy > 0 && Math.hypot(ball.x - playerSetter.x, ball.y - (FLOOR_Y - 115)) < 55) {
+          triggerSetToSpiker();
+        } else if (ball.y >= FLOOR_Y - ball.radius) {
+          triggerSetToSpiker();
+        }
+      } else if (state.phase === 'SET_TO_SPIKER') {
+        const distToSnoopy = Math.hypot(ball.x - (snoopy.x + 22), ball.y - (snoopy.y - 78));
+        state.canSpikeNow = snoopy.jumping && !state.hasSpiked && distToSnoopy <= 145;
+
+        // En el intento 8 se garantiza el remate y punto al 100%
+        if (state.attempts >= state.maxAttempts && !state.hasSpiked && ball.vy > 40 && ball.y > 240) {
+          snoopy.jumping = true;
+          snoopy.x = Math.max(330, Math.min(NET_X - 65, ball.x - 22));
+          snoopy.y = ball.y + 78;
+          snoopy.vy = -120;
+          executeSpike();
+          return;
+        }
+
+        if (ball.y >= FLOOR_Y - ball.radius) {
+          ball.y = FLOOR_Y - ball.radius;
+          playSound('dig');
+          spawnFloatingText(ball.x, FLOOR_Y - 40, msgCancha.intentaDeNuevo, '#fb7185', 22);
+          state.phase = 'POINT_PAUSE';
+          setTimeout(nextAttempt, 850);
+        }
+      } else if (state.phase === 'SPIKE_FLIGHT') {
+        if (!state.currentSpikeScores && ball.x > NET_X + 65 && ball.y >= FLOOR_Y - 85 && ball.vy > 0) {
+          const d1 = Math.abs(ball.x - enemyDef1.x);
+          const d2 = Math.abs(ball.x - enemyDef2.x);
+          const defender = d1 < d2 ? enemyDef1 : enemyDef2;
+
+          defender.x += (ball.x - defender.x) * 0.65;
+          defender.digAnim = 1;
+          defender.diveX = ball.x >= defender.x ? 22 : -22;
+          ball.powerMode = false;
+          playSound('dig');
+          spawnParticles(ball.x, ball.y, '#fb7185', 14, 200);
+          spawnFloatingText(defender.x, FLOOR_Y - 115, msgCancha.recepcionRival, '#fda4af', 21);
+
+          state.phase = 'ENEMY_RETURN';
+          const returnTargetX = playerLibero.x + 25;
+          const returnTargetY = FLOOR_Y - 75;
+          const tReturn = 1.15;
+          ball.vx = (returnTargetX - ball.x) / tReturn;
+          ball.vy = (returnTargetY - ball.y - 0.5 * GRAVITY * tReturn * tReturn) / tReturn;
+          ball.spin = -6;
+          return;
+        }
+
+        if (ball.y >= FLOOR_Y - ball.radius) {
+          ball.y = FLOOR_Y - ball.radius;
+          ball.vx = 0;
+          ball.vy = 0;
+          awardPointAndReward();
+        }
+      } else if (state.phase === 'ENEMY_RETURN') {
+        if (ball.x < NET_X - 40 && ball.y >= FLOOR_Y - 95 && ball.vy > 0) {
+          playerLibero.digAnim = 1;
+          playSound('dig');
+          spawnParticles(ball.x, ball.y, '#38bdf8', 12, 160);
+          spawnFloatingText(playerLibero.x + 15, playerLibero.y - 115, msgCancha.buenaRecepcion, '#38bdf8', 21);
+
+          if (state.attempts < state.maxAttempts) {
+            state.attempts += 1;
+            updateAttemptUI();
+          }
+
+          state.rallyCount += 1;
+          state.phase = 'PASS_TO_SETTER';
+          state.phaseTimer = 0;
+          const targetX = playerSetter.x - 10;
+          const targetY = FLOOR_Y - 125;
+          const flightTime = 0.72;
+          ball.vx = (targetX - ball.x) / flightTime;
+          ball.vy = (targetY - ball.y - 0.5 * GRAVITY * flightTime * flightTime) / flightTime;
+          ball.spin = 5;
+        } else if (ball.y >= FLOOR_Y - ball.radius) {
+          ball.y = FLOOR_Y - ball.radius;
+          state.phase = 'POINT_PAUSE';
+          setTimeout(nextAttempt, 800);
+        }
+      }
+    }
+
+    function drawCourt(timeSec) {
+      const wallGrad = ctx.createLinearGradient(0, 0, 0, FLOOR_Y);
+      wallGrad.addColorStop(0, '#0f172a');
+      wallGrad.addColorStop(0.55, '#1e293b');
+      wallGrad.addColorStop(1, '#334155');
+      ctx.fillStyle = wallGrad;
+      ctx.fillRect(0, 0, VW, FLOOR_Y);
+
+      for (let i = 0; i < 4; i++) {
+        const lx = 220 + i * 255;
+        const beam = ctx.createRadialGradient(lx, 20, 10, lx, 220, 260);
+        beam.addColorStop(0, 'rgba(254, 249, 195, 0.22)');
+        beam.addColorStop(1, 'rgba(254, 249, 195, 0)');
+        ctx.fillStyle = beam;
+        ctx.beginPath();
+        ctx.arc(lx, 120, 260, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(lx - 32, 10, 64, 10);
+      }
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(40, 250, VW - 80, FLOOR_Y - 250);
+
+      for (let row = 0; row < 3; row++) {
+        const sy = 285 + row * 48;
+        ctx.fillStyle = row % 2 === 0 ? '#1e293b' : '#172033';
+        ctx.fillRect(45, sy, VW - 90, 42);
+
+        for (let px = 75; px < VW - 75; px += 34) {
+          const bob = Math.sin(timeSec * 3.5 + px * 0.05 + row) * 3;
+          const shirtColors = ['#38bdf8', '#f472b6', '#facc15', '#a78bfa', '#34d399', '#fb923c'];
+          ctx.fillStyle = shirtColors[(px + row * 7) % shirtColors.length];
+          ctx.beginPath();
+          ctx.arc(px, sy + 18 + bob, 11, Math.PI, 0);
+          ctx.fill();
+
+          ctx.fillStyle = '#fde68a';
+          ctx.beginPath();
+          ctx.arc(px, sy + 5 + bob, 6.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      banners.forEach((b) => {
+        const bw = 250;
+        const bh = 44;
+        const bx = b.x - bw / 2;
+        const by = 148;
+
+        ctx.save();
+        ctx.fillStyle = b.bg;
+        ctx.strokeStyle = b.border;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        ctx.roundRect(bx, by, bw, bh, 12);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 14px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(b.text, b.x, by + bh / 2);
+        ctx.restore();
+      });
+
+      const floorGrad = ctx.createLinearGradient(0, FLOOR_Y - 22, 0, VH);
+      floorGrad.addColorStop(0, '#d97706');
+      floorGrad.addColorStop(0.25, '#f59e0b');
+      floorGrad.addColorStop(1, '#b45309');
+      ctx.fillStyle = floorGrad;
+      ctx.fillRect(0, FLOOR_Y - 22, VW, VH - (FLOOR_Y - 22));
+
+      ctx.strokeStyle = 'rgba(120, 53, 15, 0.25)';
+      ctx.lineWidth = 1.5;
+      for (let y = FLOOR_Y - 10; y < VH; y += 16) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(VW, y);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(COURT_LEFT, FLOOR_Y - 16);
+      ctx.lineTo(COURT_LEFT - 25, FLOOR_Y + 26);
+      ctx.moveTo(COURT_RIGHT, FLOOR_Y - 16);
+      ctx.lineTo(COURT_RIGHT + 25, FLOOR_Y + 26);
+      ctx.moveTo(COURT_LEFT, FLOOR_Y - 16);
+      ctx.lineTo(COURT_RIGHT, FLOOR_Y - 16);
+      ctx.moveTo(COURT_LEFT - 25, FLOOR_Y + 26);
+      ctx.lineTo(COURT_RIGHT + 25, FLOOR_Y + 26);
+      ctx.moveTo(NET_X - 175, FLOOR_Y - 16);
+      ctx.lineTo(NET_X - 185, FLOOR_Y + 26);
+      ctx.moveTo(NET_X + 175, FLOOR_Y - 16);
+      ctx.lineTo(NET_X + 185, FLOOR_Y + 26);
+      ctx.stroke();
+    }
+
+    function drawTargetSpot(timeSec) {
+      const pulse = 1 + Math.sin(timeSec * 6) * 0.08;
+      const rx = 44 * pulse;
+      const ry = 13 * pulse;
+
+      ctx.save();
+      ctx.translate(state.targetLandingX, FLOOR_Y + 4);
+
+      const glow = ctx.createRadialGradient(0, 0, 4, 0, 0, rx * 1.35);
+      glow.addColorStop(0, 'rgba(250, 204, 21, 0.55)');
+      glow.addColorStop(0.7, 'rgba(56, 189, 248, 0.25)');
+      glow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx * 1.35, ry * 1.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#fde047';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 6]);
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(254, 240, 138, 0.35)';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, rx * 0.55, ry * 0.55, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    function drawNet() {
+      const netHeight = 115;
+      const netWidth = 16;
+      const nx = NET_X - netWidth / 2;
+      const ny = NET_TOP_Y;
+
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(NET_X - 5, NET_TOP_Y - 12, 10, NET_BOTTOM_Y - NET_TOP_Y + 26);
+
+      for (let i = 0; i < 6; i++) {
+        ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#ffffff';
+        ctx.fillRect(NET_X - 2.5, NET_TOP_Y - 54 + i * 9, 5, 9);
+      }
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.14)';
+      ctx.fillRect(nx, ny, netWidth, netHeight);
+
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.72)';
+      ctx.lineWidth = 1.4;
+      for (let y = ny + 8; y < ny + netHeight; y += 11) {
+        ctx.beginPath();
+        ctx.moveTo(nx, y);
+        ctx.lineTo(nx + netWidth, y);
+        ctx.stroke();
+      }
+      for (let x = nx + 4; x < nx + netWidth; x += 5) {
+        ctx.beginPath();
+        ctx.moveTo(x, ny);
+        ctx.lineTo(x, ny + netHeight);
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(nx - 2, ny, netWidth + 4, 8);
+      ctx.fillRect(nx - 1, ny + netHeight - 5, netWidth + 2, 5);
+      ctx.restore();
+    }
+
+    function drawSnoopy(p, timeSec) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+
+      const jumpHeight = Math.max(0, FLOOR_Y - p.y);
+      const shadowScale = Math.max(0.45, 1 - jumpHeight / 280);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.32)';
+      ctx.beginPath();
+      ctx.ellipse(0, jumpHeight + 4, 24 * shadowScale, 7 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const runBob = p.jumping ? 0 : Math.abs(Math.sin(p.runCycle)) * 4;
+      ctx.translate(0, -runBob);
+
+      const legSwing = p.jumping ? 0.35 : Math.sin(p.runCycle) * 0.3;
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 2;
+
+      ctx.save();
+      ctx.translate(-5, -24);
+      ctx.rotate(-legSwing);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(-5, 0, 10, 22, 5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(3, 22, 11, 5.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(6, -24);
+      ctx.rotate(legSwing);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(-5, 0, 10, 22, 5);
+      ctx.fill();
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.ellipse(4, 22, 11, 5.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(-15, -34);
+      ctx.rotate(-0.5 + Math.sin(timeSec * 10) * 0.25);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(-6, 0, 8, 3.5, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(0, -42, 16, 22, 0.08, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.ellipse(-11, -43, 6, 10, -0.15, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.roundRect(-12, -63, 25, 6, 3);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(4, -78);
+      if (p.jumping) ctx.rotate(-0.15);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(-2, -2, 15, 14, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.ellipse(14, 1, 16, 10.5, 0.05, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.ellipse(6, 0, 12, 10, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.ellipse(28, -2, 5, 4, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.ellipse(7, -5, 2.2, 3.2, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(14, 4, 8, 0.15, 1.15);
+      ctx.stroke();
+
+      ctx.save();
+      ctx.translate(-9, -4);
+      ctx.rotate(p.jumping ? -0.55 : 0.15);
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.ellipse(-3, 10, 7, 13, 0.15, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(6, -54);
+      let armAngle = 0.4;
+      if (p.spikeAnim > 0) {
+        armAngle = -1.6 + (1 - p.spikeAnim) * 2.4;
+      } else if (p.jumping) {
+        armAngle = -2.35;
+      }
+      ctx.rotate(armAngle);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.roundRect(-4, -3, 24, 8, 4);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.restore();
+    }
+
+    function drawPlayer(p) {
+      ctx.save();
+      ctx.translate(p.x, p.y);
+
+      const jumpHeight = Math.max(0, FLOOR_Y - (p.y || FLOOR_Y));
+      const shadowScale = Math.max(0.45, 1 - jumpHeight / 280);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.3)';
+      ctx.beginPath();
+      ctx.ellipse(0, jumpHeight + 4, 22 * shadowScale, 6 * shadowScale, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      const squat = p.digAnim ? p.digAnim * 12 : 0;
+      ctx.translate(p.diveX || 0, squat);
+
+      ctx.fillStyle = p.skin;
+      ctx.fillRect(-10, -34, 7, 26 - squat * 0.5);
+      ctx.fillRect(3, -34, 7, 26 - squat * 0.5);
+
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.roundRect(-12, -10 - squat * 0.5, 11, 7, 3);
+      ctx.roundRect(1, -10 - squat * 0.5, 11, 7, 3);
+      ctx.fill();
+
+      ctx.fillStyle = p.shorts;
+      ctx.beginPath();
+      ctx.roundRect(-13, -48, 26, 18, 4);
+      ctx.fill();
+
+      ctx.fillStyle = p.jersey;
+      ctx.beginPath();
+      ctx.roundRect(-15, -82, 30, 36, 7);
+      ctx.fill();
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '800 12px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(p.number, 0, -61);
+
+      ctx.fillStyle = p.skin;
+      ctx.beginPath();
+      ctx.arc(0, -96, 13, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = p.hair;
+      ctx.beginPath();
+      ctx.arc(0, -99, 13.5, Math.PI, 0);
+      ctx.fill();
+
+      ctx.strokeStyle = p.skin;
+      ctx.lineWidth = 6.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if (p.blockHands && p.blockHands > 0) {
+        ctx.moveTo(-10, -76);
+        ctx.lineTo(-8, -124);
+        ctx.moveTo(10, -76);
+        ctx.lineTo(8, -124);
+      } else if (p.armRaise && p.armRaise > 0) {
+        ctx.moveTo(-10, -76);
+        ctx.lineTo(-6, -116);
+        ctx.moveTo(10, -76);
+        ctx.lineTo(6, -116);
+      } else if (p.digAnim && p.digAnim > 0) {
+        const dir = p.facing || 1;
+        ctx.moveTo(0, -70);
+        ctx.lineTo(dir * 26, -54);
+      } else {
+        ctx.moveTo(-14, -74);
+        ctx.lineTo(-18, -50);
+        ctx.moveTo(14, -74);
+        ctx.lineTo(18, -50);
+      }
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawBall(timeSec) {
+      for (let i = 0; i < ball.trail.length; i++) {
+        const t = ball.trail[i];
+        const ratio = (i + 1) / ball.trail.length;
+        ctx.fillStyle = t.power
+          ? `rgba(250, 204, 21, ${ratio * 0.45})`
+          : `rgba(125, 211, 252, ${ratio * 0.25})`;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, ball.radius * ratio * 0.9, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      if (state.phase === 'SET_TO_SPIKER' && !state.hasSpiked) {
+        const dist = Math.hypot(ball.x - (snoopy.x + 22), ball.y - (snoopy.y - 78));
+        const inRange = dist <= 145;
+        const ringRadius = inRange ? 32 + Math.sin(timeSec * 18) * 4 : 44;
+
+        ctx.save();
+        ctx.strokeStyle = inRange ? '#facc15' : 'rgba(56, 189, 248, 0.7)';
+        ctx.lineWidth = inRange ? 4 : 2.5;
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ringRadius, 0, Math.PI * 2);
+        ctx.stroke();
+
+        if (inRange) {
+          ctx.fillStyle = '#fde047';
+          ctx.font = '800 14px Russo One, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(msgCancha.remataAhora, ball.x, ball.y - 44);
+        }
+        ctx.restore();
+      }
+
+      const hRatio = Math.max(0.35, 1 - (FLOOR_Y - ball.y) / 420);
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.28)';
+      ctx.beginPath();
+      ctx.ellipse(ball.x, FLOOR_Y + 4, ball.radius * hRatio, 5 * hRatio, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.translate(ball.x, ball.y);
+      ctx.rotate(ball.angle);
+
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.fillStyle = '#0284c7';
+      ctx.beginPath();
+      ctx.arc(-ball.radius * 0.55, -ball.radius * 0.35, ball.radius * 0.85, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#facc15';
+      ctx.beginPath();
+      ctx.arc(ball.radius * 0.65, ball.radius * 0.35, ball.radius * 0.82, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#1e293b';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.arc(-ball.radius * 0.55, -ball.radius * 0.35, ball.radius * 0.85, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(ball.radius * 0.65, ball.radius * 0.35, ball.radius * 0.82, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.strokeStyle = '#0f172a';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(0, 0, ball.radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function drawEffects() {
+      particles.forEach((p) => {
+        ctx.globalAlpha = Math.max(0, p.life / p.maxLife);
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+
+      floatingTexts.forEach((ft) => {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, ft.life / ft.maxLife);
+        ctx.font = `800 ${ft.size}px Russo One, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 4;
+        ctx.strokeText(ft.text, ft.x, ft.y);
+        ctx.fillStyle = ft.color;
+        ctx.fillText(ft.text, ft.x, ft.y);
+        ctx.restore();
+      });
+
+      confetti.forEach((c) => {
+        ctx.save();
+        ctx.translate(c.x, c.y);
+        ctx.rotate(c.rot);
+        ctx.fillStyle = c.color;
+        ctx.fillRect(-c.w / 2, -c.h / 2, c.w, c.h);
+        ctx.restore();
+      });
+    }
+
+    function render(timeMs) {
+      const timeSec = timeMs * 0.001;
+      ctx.save();
+
+      const scaleX = canvas.width / VW;
+      const scaleY = canvas.height / VH;
+      ctx.scale(scaleX, scaleY);
+
+      if (state.screenShake > 0) {
+        const sx = (Math.random() - 0.5) * state.screenShake;
+        const sy = (Math.random() - 0.5) * state.screenShake;
+        ctx.translate(sx, sy);
+      }
+
+      drawCourt(timeSec);
+      drawTargetSpot(timeSec);
+
+      drawPlayer(playerLibero);
+      drawPlayer(playerSetter);
+      drawSnoopy(snoopy, timeSec);
+
+      drawPlayer(enemyBlocker);
+      drawPlayer(enemyDef1);
+      drawPlayer(enemyDef2);
+
+      drawNet();
+      drawBall(timeSec);
+      drawEffects();
+
+      ctx.restore();
+    }
+
+    function gameLoop(timeMs) {
+      // Detener el bucle del juego cuando ya se ocultó completamente tras pasar a la recompensa
+      if (gameView.style.display === 'none') return;
+
+      if (!state.lastTime) state.lastTime = timeMs;
+      const dt = Math.min(0.05, (timeMs - state.lastTime) / 1000);
+      state.lastTime = timeMs;
+
+      update(dt);
+      render(timeMs);
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    function resizeCanvas() {
+      if (gameView.style.display === 'none') return;
+      const wrapper = document.getElementById('canvas-wrapper');
+      if (!wrapper) return;
+      const rect = wrapper.getBoundingClientRect();
+      const aspect = VW / VH;
+
+      let w = rect.width - 16;
+      let h = rect.height - 10;
+      if (w / h > aspect) {
+        w = h * aspect;
+      } else {
+        h = w / aspect;
+      }
+
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.style.width = `${Math.max(280, Math.floor(w))}px`;
+      canvas.style.height = `${Math.max(180, Math.floor(h))}px`;
+      canvas.width = Math.floor(Math.max(280, w) * dpr);
+      canvas.height = Math.floor(Math.max(180, h) * dpr);
+    }
+
+    btnStart.addEventListener('click', () => {
+      ensureAudio();
+      startOverlay.classList.add('hidden');
+      state.started = true;
+      state.attempts = 1;
+      updateAttemptUI();
+      startRally();
+    });
+
+    btnClaim.addEventListener('click', claimReward);
+
+    btnAction.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      handlePlayerAction();
+    });
+
+    canvas.addEventListener('pointermove', (e) => {
+      setTargetFromPointer(e.clientX);
+    });
+
+    canvas.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      setTargetFromPointer(e.clientX);
+      handlePlayerAction();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      // No interferir con el teclado una vez que se abrió la página de recompensa
+      if (state.transitionedToReward) return;
+
+      if (e.code === 'ArrowLeft' || e.code === 'ArrowUp') {
+        e.preventDefault();
+        adjustTargetLanding(-65);
+      } else if (e.code === 'ArrowRight' || e.code === 'ArrowDown') {
+        e.preventDefault();
+        adjustTargetLanding(65);
+      } else if (e.code === 'Space') {
+        e.preventDefault();
+        if (!startOverlay.classList.contains('hidden')) {
+          btnStart.click();
+        } else if (!rewardModal.classList.contains('hidden')) {
+          claimReward();
+        } else {
+          handlePlayerAction();
+        }
+      }
+    });
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function startGameEngine() {
+      resizeCanvas();
+      resetPositions();
+      updateAttemptUI();
+      requestAnimationFrame(gameLoop);
+    }
+
+    if (document.readyState === 'complete') {
+      startGameEngine();
+    } else {
+      window.addEventListener('load', startGameEngine);
+    }
+  })();
+</script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="Pecosita">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/Pecosita.zip!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
